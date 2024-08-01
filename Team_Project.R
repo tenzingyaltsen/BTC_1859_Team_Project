@@ -51,3 +51,27 @@ clean_data3 <- clean_data2 %>%
                   "Renal.fail", "Depression", "Corticoid", "ESS", 
                   "PSQIS", "AIS", "BSS"), as.factor))
 
+# Create a function that extracts descriptive statistics for a variable and
+# displays them in a graph
+descriptive <- function(var, data){
+  colours <- c("blue", "skyblue")
+  for (i in var) {
+    print(paste0("Summary Statistics for ", i, ":"))
+    print(summary(data[[i]]))
+    if (is.factor(data[[i]])) {
+      plot(data[[i]], main = paste0("Frequency of ", i), 
+           xlab = i, ylab = "Frequency", col = colours)
+    } else {
+      # plot_num(data)
+      hist(data[[i]], main = paste0("Distribution of ", i),
+           xlab = i, ylab = "Frequency", col = colours)
+    }
+  }
+}
+
+# Specify the variables needed to conduct summary statistics
+vars <- c("Gender", "Age", "BMI", "TFT", "Liver.diag", "RoD", "RGD", 
+          "Any.fibro", "Renal.fail", "Depression", "Corticoid", 
+          "ESS", "PSQIS", "AIS", "BSS", "SF36.PCS", "SF36.MCS")
+# Conduct descriptive analysis
+descriptive(vars, clean_data3)
