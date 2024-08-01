@@ -93,3 +93,10 @@ disturbed_sleep_preval <- function(scale, data) {
 scales <- c("ESS", "PSQIS", "AIS", "BSS")
 # Calculate prevalence of sleep disturbance
 disturbed_sleep_preval(scales, clean_data3)
+
+# Create backward step-wise model.
+clean_data_ess_model <- subset(clean_data3, select=c(-PSQIS, -BSS, -AIS))
+str(clean_data_ess_model)
+glm.mod.full <- glm(ESS~., data = clean_data_ess_model)
+glm.step.back <- stepAIC(glm.mod.full,trace = F)
+summary(glm.step.back)
