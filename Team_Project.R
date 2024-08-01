@@ -75,3 +75,21 @@ vars <- c("Gender", "Age", "BMI", "TFT", "Liver.diag", "RoD", "RGD",
           "ESS", "PSQIS", "AIS", "BSS", "SF36.PCS", "SF36.MCS")
 # Conduct descriptive analysis
 descriptive(vars, clean_data3)
+
+# Estimate prevalence of sleep disturbance
+# Create a function that estimates prevalence of sleep disturbance for each scale
+disturbed_sleep_preval <- function(scale, data) {
+  for (i in scale) {
+    freq <- table(data[[i]])
+    prop <- prop.table(freq)
+    print(i)
+    print(prop)
+    print(paste0("Prevalence of sleep disturbance according to ", 
+                 i, ": ", prop["1"]))
+  }
+}
+
+# Specify scales needed to estimate prevalence of sleep disturbance
+scales <- c("ESS", "PSQIS", "AIS", "BSS")
+# Calculate prevalence of sleep disturbance
+disturbed_sleep_preval(scales, clean_data3)
