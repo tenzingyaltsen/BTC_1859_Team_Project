@@ -128,10 +128,12 @@ summary(ais_glm_step_back)
 
 #' Evaluate relationship between sleep disturbance and quality of 
 #' life (physical and mental).
-attach(clean_data3)
+clean_data3$total_qol <- clean_data3$SF36.MCS + clean_data3$SF36.PCS
 
 # Create a linear regression model for sleep disturbance and QOL
-sleep_mcs <- lm(SF36.MCS ~ ESS + PSQIS + AIS + BSS)
-sleep_pcs <- lm(SF36.PCS ~ ESS + PSQIS + AIS + BSS)
+sleep_mcs <- lm(SF36.MCS ~ ESS + PSQIS + AIS + BSS, data = clean_data3)
+sleep_pcs <- lm(SF36.PCS ~ ESS + PSQIS + AIS + BSS, data = clean_data3)
+sleep_qol <- lm(total_qol ~ ESS + PSQIS + AIS + BSS, data = clean_data3)
 summary(sleep_mcs)
 summary(sleep_pcs)
+summary(sleep_qol)
