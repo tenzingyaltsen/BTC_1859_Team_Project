@@ -86,17 +86,48 @@ disturbed_sleep_preval <- function(scale, data) {
     print(prop)
     print(paste0("Prevalence of sleep disturbance according to ", 
                  i, ": ", prop["1"]))
+    
   }
 }
+prev_any <- (length(which(clean_data3$ESS == 1 | clean_data3$PSQIS == 1 |
+                           clean_data3$AIS == 1 | clean_data3$BSS == 1))) / nrow(clean_data3)
+print(paste0("Prevalence of sleep disturbance according to any questionnaire: ", prev_any))
 
 # Specify scales needed to estimate prevalence of sleep disturbance
 scales <- c("ESS", "PSQIS", "AIS", "BSS")
 # Calculate prevalence of sleep disturbance
 disturbed_sleep_preval(scales, clean_data3)
 
-# Create backward step-wise model.
-clean_data_ess_model <- subset(clean_data3, select=c(-PSQIS, -BSS, -AIS))
+# Create backward step-wise model for ESS as sleep disturbance measure.
+clean_data_ess_model <- subset(clean_data3, select=c(-Subject, -PSQIS, -BSS, -AIS))
 str(clean_data_ess_model)
-glm.mod.full <- glm(ESS~., data = clean_data_ess_model)
-glm.step.back <- stepAIC(glm.mod.full,trace = F)
-summary(glm.step.back)
+ess_glm_mod_full <- glm(ESS~., data = clean_data_ess_model, family="binomial")
+ess_glm_step_back <- stepAIC(ess_glm_mod_full,trace = F)
+summary(ess_glm_step_back)
+
+# Create backward step-wise model for PSQIS as sleep disturbance measure.
+clean_data_psqis_model <- subset(clean_data3, select=c(-Subject, -ESS, -BSS, -AIS))
+str(clean_data_psqis_model)
+psqis_glm_mod_full <- glm(PSQIS~., data = clean_data_psqis_model, family="binomial")
+psqis_glm_step_back <- stepAIC(psqis_glm_mod_full,trace = F)
+summary(psqis_glm_step_back)
+
+# Create backward step-wise model for BSS as sleep disturbance measure.
+clean_data_bss_model <- subset(clean_data3, select=c(-Subject, -ESS, -PSQIS, -AIS))
+str(clean_data_bss_model)
+bss_glm_mod_full <- glm(BSS~., data = clean_data_bss_model, family="binomial")
+bss_glm_step_back <- stepAIC(bss_glm_mod_full,trace = F)
+summary(bss_glm_step_back)
+
+# Create backward step-wise model for AIS as sleep disturbance measure.
+clean_data_ais_model <- subset(clean_data3, select=c(-Subject, -ESS, -PSQIS, -BSS))
+str(clean_data_ais_model)
+ais_glm_mod_full <- glm(AIS~., data = clean_data_ais_model, family="binomial")
+ais_glm_step_back <- stepAIC(ais_glm_mod_full,trace = F)
+summary(ais_glm_step_back)
+
+#' Evaluate relationship between sleep disturbance and quality of 
+#' life (physical and mental).
+attach(clean_data3)
+cor(c(ESS,PSQIS,BSS,AIS),c(SF36.PCS,SF36.MCS))
+cor(as.numeric(ESS), (SF36.MCS))
