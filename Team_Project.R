@@ -1,9 +1,11 @@
 library(dplyr)
 library(mice)
+library(car)
+library(MASS)
 
 # Import data.
 raw_data <- read.csv("project_data.csv")
-View(raw_data)
+# View(raw_data)
 
 # Explore data.
 summary(raw_data)
@@ -29,8 +31,11 @@ any(is.na(imp_stoch))
 summary(imp_stoch)
 xyplot(imp_stoch, Pittsburgh.Sleep.Quality.Index.Score ~ Age)
 
+# Convert from mids to dataframe
+imp_stoch_df <- complete(imp_stoch)
+
 # Rename variables.
-clean_data1 <- clean_data %>%
+clean_data <- imp_stoch_df %>%
   rename(TFT = "Time.from.transplant", 
          Liver.diag = "Liver.Diagnosis",
          RoD = "Recurrence.of.disease",
@@ -43,13 +48,16 @@ clean_data1 <- clean_data %>%
          BSS = "Berlin.Sleepiness.Scale")
 
 # Convert sleep disturbance measurements to binary.
-clean_data2 <- clean_data1 %>%
+clean_data1 <- clean_data %>%
   mutate(ESS = ifelse(ESS > 10, 1, 0)) %>%
   mutate(PSQIS = ifelse(PSQIS > 4, 1, 0)) %>%
-  mutate(AIS = ifelse(AIS > 5, 1, 0))
+  mutate(AIS = ifelse(AIS > 5, 1, 0)) %>%
+  # 4 of the imputed variables are above 0.5; 2 of the imputed variables are
+  # below 0.5
+  mutate(BSS = ifelse(BSS > 0.5, 1, 0))
 
 # Change categorical variables to factors.
-clean_data3 <- clean_data2 %>% 
+clean_data2 <- clean_data1 %>% 
   mutate(across(c("Gender", "Liver.diag", "RoD", "RGD", "Any.fibro",
                   "Renal.fail", "Depression", "Corticoid", "ESS", 
                   "PSQIS", "AIS", "BSS"), as.factor))
@@ -77,7 +85,7 @@ vars <- c("Gender", "Age", "BMI", "TFT", "Liver.diag", "RoD", "RGD",
           "Any.fibro", "Renal.fail", "Depression", "Corticoid", 
           "ESS", "PSQIS", "AIS", "BSS", "SF36.PCS", "SF36.MCS")
 # Conduct descriptive analysis
-descriptive(vars, clean_data3)
+descriptive(vars, clean_data2)
 
 # Estimate prevalence of sleep disturbance
 # Create a function that estimates prevalence of sleep disturbance for each scale
@@ -92,51 +100,138 @@ disturbed_sleep_preval <- function(scale, data) {
     
   }
 }
-prev_any <- (length(which(clean_data3$ESS == 1 | clean_data3$PSQIS == 1 |
-                           clean_data3$AIS == 1 | clean_data3$BSS == 1))) / nrow(clean_data3)
+prev_any <- (length(which(clean_data2$ESS == 1 | clean_data2$PSQIS == 1 |
+                           clean_data2$AIS == 1 | clean_data2$BSS == 1))) / nrow(clean_data2)
 print(paste0("Prevalence of sleep disturbance according to any questionnaire: ", prev_any))
 
 # Specify scales needed to estimate prevalence of sleep disturbance
 scales <- c("ESS", "PSQIS", "AIS", "BSS")
 # Calculate prevalence of sleep disturbance
-disturbed_sleep_preval(scales, clean_data3)
+disturbed_sleep_preval(scales, clean_data2)
 
-# Create backward step-wise model for ESS as sleep disturbance measure.
-clean_data_ess_model <- subset(clean_data3, select=c(-Subject, -PSQIS, -BSS, -AIS))
-str(clean_data_ess_model)
-ess_glm_mod_full <- glm(ESS~., data = clean_data_ess_model, family="binomial")
+# Corticosteroid (1), depression (1), BMI (1), liver diagnosis (4), 
+# graft dysfunction/rejection (1), fibrosis (1), renal failure (1), gender (1)
+# 11 df
+
+# Logistic regression
+
+# Select relevant columns for logistic regression model
+clean_data_ess_model <- subset(clean_data2, 
+                               select=c(Corticoid, Depression, BMI, Liver.diag,
+                                        RGD, Any.fibro, Renal.fail, Gender, ESS))
+
+cor.test(clean_data_ess_model$Corticoid, 
+         clean_data_ess_model$ESS)
+
+ess_glm_mod_full <- glm(ESS ~., data = clean_data_ess_model, family="binomial")
 ess_glm_step_back <- stepAIC(ess_glm_mod_full,trace = F)
 summary(ess_glm_step_back)
 
-# Create backward step-wise model for PSQIS as sleep disturbance measure.
-clean_data_psqis_model <- subset(clean_data3, select=c(-Subject, -ESS, -BSS, -AIS))
-str(clean_data_psqis_model)
-psqis_glm_mod_full <- glm(PSQIS~., data = clean_data_psqis_model, family="binomial")
+# m/10 for ESS
+table(clean_data2$ESS)
+# There are 74 participants who experience sleep disturbance according to ESS.
+# Whereas, there are 194 participants who do not experience sleep disturbance.
+74 / 10
+# 4 predictors/degrees of freedom
+
+
+# Logistic regression for PSQIS
+
+# Select relevant columns for logistic regression model
+clean_data_psqis_model <- subset(clean_data2, 
+                               select=c(Corticoid, Depression, BMI, Liver.diag,
+                                        RGD, Any.fibro, Renal.fail, Gender, PSQIS))
+
+psqis_glm_mod_full <- glm(PSQIS ~., data = clean_data_psqis_model, family="binomial")
 psqis_glm_step_back <- stepAIC(psqis_glm_mod_full,trace = F)
 summary(psqis_glm_step_back)
 
-# Create backward step-wise model for BSS as sleep disturbance measure.
-clean_data_bss_model <- subset(clean_data3, select=c(-Subject, -ESS, -PSQIS, -AIS))
-str(clean_data_bss_model)
-bss_glm_mod_full <- glm(BSS~., data = clean_data_bss_model, family="binomial")
-bss_glm_step_back <- stepAIC(bss_glm_mod_full,trace = F)
-summary(bss_glm_step_back)
+# m/15 for PSQIS
+table(clean_data2$PSQIS)
+# There are 183 participants who experience sleep disturbance according to ESS.
+# Whereas, there are 85 participants who do not experience sleep disturbance.
+85 / 15
+# 5 predictors/degrees of freedom
 
-# Create backward step-wise model for AIS as sleep disturbance measure.
-clean_data_ais_model <- subset(clean_data3, select=c(-Subject, -ESS, -PSQIS, -BSS))
-str(clean_data_ais_model)
-ais_glm_mod_full <- glm(AIS~., data = clean_data_ais_model, family="binomial")
+
+# Logistic regression for AIS
+
+# Select relevant columns for logistic regression model
+clean_data_ais_model <- subset(clean_data2, 
+                                 select=c(Corticoid, Depression, BMI, Liver.diag,
+                                          RGD, Any.fibro, Renal.fail, Gender, AIS))
+
+ais_glm_mod_full <- glm(AIS ~., data = clean_data_ais_model, family="binomial")
 ais_glm_step_back <- stepAIC(ais_glm_mod_full,trace = F)
 summary(ais_glm_step_back)
 
-#' Evaluate relationship between sleep disturbance and quality of 
-#' life (physical and mental).
-clean_data3$total_qol <- clean_data3$SF36.MCS + clean_data3$SF36.PCS
+ais_glm_mod_2 <- glm(AIS ~ Depression + Any.fibro + Liver.diag, 
+                     data = clean_data_ais_model, family="binomial")
+summary(ais_glm_mod_2)
+anova(ais_glm_step_back, ais_glm_mod_2)
+# m/15 for AIS
+table(clean_data2$AIS)
+# There are 151 participants who experience sleep disturbance according to ESS.
+# Whereas, there are 117 participants who do not experience sleep disturbance.
+117/15
+# 7 predictors/degrees of freedom
+
+# Logistic regression for BSS
+
+# Select relevant columns for logistic regression model
+clean_data_bss_model <- subset(clean_data2, 
+                               select=c(Corticoid, Depression, BMI, Liver.diag,
+                                        RGD, Any.fibro, Renal.fail, Gender, BSS))
+
+bss_glm_mod_full <- glm(BSS ~., data = clean_data_bss_model, family="binomial")
+bss_glm_step_back <- stepAIC(bss_glm_mod_full,trace = F)
+summary(bss_glm_step_back)
+
+# m/15 for BSS
+table(clean_data2$BSS)
+# There are 106 participants who experience sleep disturbance according to ESS.
+# Whereas, there are 162 participants who do not experience sleep disturbance.
+106/15
+# 7 predictors/degrees of freedom
 
 # Create a linear regression model for sleep disturbance and QOL
-sleep_mcs <- lm(SF36.MCS ~ ESS + PSQIS + AIS + BSS, data = clean_data3)
-sleep_pcs <- lm(SF36.PCS ~ ESS + PSQIS + AIS + BSS, data = clean_data3)
-sleep_qol <- lm(total_qol ~ ESS + PSQIS + AIS + BSS, data = clean_data3)
+sleep_mcs <- lm(SF36.MCS ~ ESS + PSQIS + AIS + BSS, data = clean_data2)
+sleep_pcs <- lm(SF36.PCS ~ ESS + PSQIS + AIS + BSS, data = clean_data2)
 summary(sleep_mcs)
 summary(sleep_pcs)
-summary(sleep_qol)
+
+
+# Create backward step-wise model for ESS as sleep disturbance measure.
+clean_data_ess_model_new <- subset(clean_data2, 
+                                   select=c(-Subject, -PSQIS, -BSS, -AIS,
+                                            -SF36.PCS, -SF36.MCS))
+str(clean_data_ess_model_new)
+ess_glm_mod_full_new <- glm(ESS~., data = clean_data_ess_model_new, 
+                            family="binomial")
+ess_glm_step_back_new <- stepAIC(ess_glm_mod_full_new,trace = F)
+summary(ess_glm_step_back_new)
+
+# Create backward step-wise model for PSQIS as sleep disturbance measure.
+clean_data_psqis_model_new <- subset(clean_data2, 
+                                     select=c(-Subject, -ESS, -BSS, -AIS, 
+                                              -SF36.PCS, -SF36.MCS))
+psqis_glm_mod_full_new <- glm(PSQIS~., data = clean_data_psqis_model_new, family="binomial")
+psqis_glm_step_back_new <- stepAIC(psqis_glm_mod_full_new,trace = F)
+summary(psqis_glm_step_back_new)
+
+# Create backward step-wise model for BSS as sleep disturbance measure.
+clean_data_bss_model_new <- subset(clean_data2, select=c(-Subject, -ESS, -PSQIS, 
+                                                         -AIS, -SF36.PCS, -SF36.MCS))
+bss_glm_mod_full_new <- glm(BSS~., data = clean_data_bss_model_new, 
+                            family="binomial")
+bss_glm_step_back_new <- stepAIC(bss_glm_mod_full_new,trace = F)
+summary(bss_glm_step_back_new)
+
+# Create backward step-wise model for AIS as sleep disturbance measure.
+clean_data_ais_model_new <- subset(clean_data2, 
+                                   select=c(-Subject, -ESS, -PSQIS, -BSS,
+                                            -SF36.PCS, -SF36.MCS))
+ais_glm_mod_full_new <- glm(AIS~., data = clean_data_ais_model_new, 
+                            family="binomial")
+ais_glm_step_back_new <- stepAIC(ais_glm_mod_full_new,trace = F)
+summary(ais_glm_step_back_new)
