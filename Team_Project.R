@@ -1,4 +1,5 @@
 library(dplyr)
+library(mice)
 
 # Import data.
 raw_data <- read.csv("project_data.csv")
@@ -21,10 +22,12 @@ for (i in names(working_data)) {
   print(sum(is.na(working_data[,i])))
 }
 
-# Remove rows (subjects) with any NAs.
-clean_data <- na.omit(working_data)
-summary(clean_data)
-str(clean_data)
+# Imputation with stochastic regression
+imp_stoch <- mice(working_data, method = "norm.nob", seed = 32,
+                  m = 1, print = FALSE)
+any(is.na(imp_stoch))
+summary(imp_stoch)
+xyplot(imp_stoch, Pittsburgh.Sleep.Quality.Index.Score ~ Age)
 
 # Rename variables.
 clean_data1 <- clean_data %>%
