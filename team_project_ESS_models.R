@@ -174,11 +174,6 @@ clean_data_ess_model <- subset(clean_data2,
                                select=c(Corticoid, Depression, BMI, Liver.diag,
                                         RGD, Any.fibro, Renal.fail, Gender, ESS))
 
-# Restricting the number of predictors by following the rule of thumb of m/10
-# m/10 for ESS
-table(clean_data2$ESS)
-74/10
-
 # Create a logistic regression model with all selected predictors from literature
 ess_glm_mod_full <- glm(ESS ~., data = clean_data_ess_model, family="binomial")
 summary(ess_glm_mod_full)
@@ -205,7 +200,7 @@ ess_glm_mod_back_2 <- glm(ESS ~ Corticoid + Depression + Liver.diag +
                           data = clean_data_ess_model, family = "binomial")
 summary(ess_glm_mod_back_2)
 
-# Compare this model without Renal.fail with the full model
+# Compare this model without BMI with the previous model
 AIC(ess_glm_mod_back_1)
 AIC(ess_glm_mod_back_2)
 anova(ess_glm_mod_back_1, ess_glm_mod_back_2, test = "Chisq")
@@ -217,7 +212,7 @@ ess_glm_mod_back_3 <- glm(ESS ~ Corticoid + Depression + Liver.diag +
                           data = clean_data_ess_model, family = "binomial")
 summary(ess_glm_mod_back_3)
 
-# Compare this model without Renal.fail with the full model
+# Compare this model without Any.fibro with the previous model
 AIC(ess_glm_mod_back_2)
 AIC(ess_glm_mod_back_3)
 anova(ess_glm_mod_back_2, ess_glm_mod_back_3, test = "Chisq")
@@ -230,13 +225,86 @@ ess_glm_mod_back_4 <- glm(ESS ~ Corticoid + Depression + Liver.diag +
                           data = clean_data_ess_model, family = "binomial")
 summary(ess_glm_mod_back_4)
 
-# Compare this model without Renal.fail with the full model
+# Compare this model without Gender with the previous model
 AIC(ess_glm_mod_back_3)
 AIC(ess_glm_mod_back_4)
 anova(ess_glm_mod_back_3, ess_glm_mod_back_4, test = "Chisq")
 
 # The simpler model is better according to both AIC and anova. Two of the levels
-# of Liver.diag had the highest p-values. 
+# of Liver.diag had the highest p-values. Let's remove Liver.Diag.
+ess_glm_mod_back_5 <- glm(ESS ~ Corticoid + Depression + RGD, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_5)
+
+# Compare this model without Liver.Diag with the previous model
+AIC(ess_glm_mod_back_4)
+AIC(ess_glm_mod_back_5)
+anova(ess_glm_mod_back_4, ess_glm_mod_back_5, test = "Chisq")
+
+# The more complex model was better. Let's try testing without Depression 
+# instead.
+ess_glm_mod_back_6 <- glm(ESS ~ Corticoid + Liver.diag + RGD, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_6)
+
+# Compare this model without Depression with the previous model
+AIC(ess_glm_mod_back_4)
+AIC(ess_glm_mod_back_6)
+anova(ess_glm_mod_back_4, ess_glm_mod_back_6, test = "Chisq")
+
+# Simpler model is better. Try removing Liver.diag next.
+ess_glm_mod_back_7 <- glm(ESS ~ Corticoid + RGD, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_7)
+
+# Compare this model without Depression with the previous model
+AIC(ess_glm_mod_back_6)
+AIC(ess_glm_mod_back_7)
+anova(ess_glm_mod_back_6, ess_glm_mod_back_7, test = "Chisq")
+
+# More complex was better. Try removing RGD instead.
+ess_glm_mod_back_8 <- glm(ESS ~ Corticoid + Liver.diag, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_8)
+
+# Compare this model without RGD with the previous model
+AIC(ess_glm_mod_back_6)
+AIC(ess_glm_mod_back_8)
+anova(ess_glm_mod_back_6, ess_glm_mod_back_8, test = "Chisq")
+
+# Simpler one is better. Remove Corticoid next.
+ess_glm_mod_back_9 <- glm(ESS ~ Liver.diag, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_9)
+
+# Compare this model without Corticoid with the previous model
+AIC(ess_glm_mod_back_8)
+AIC(ess_glm_mod_back_9)
+anova(ess_glm_mod_back_8, ess_glm_mod_back_9, test = "Chisq")
+
+# More complex is better. Try removing Liver.diag instead.
+ess_glm_mod_back_10 <- glm(ESS ~ Corticoid, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_10)
+
+# Compare this model without Corticoid with the previous model
+AIC(ess_glm_mod_back_8)
+AIC(ess_glm_mod_back_10)
+anova(ess_glm_mod_back_8, ess_glm_mod_back_10, test = "Chisq")
+
+# More complex is better. Compare this final model with the previous stepwise
+# mode.
+AIC(ess_glm_mod_back_8)
+AIC(ess_glm_step_back)
+anova(ess_glm_mod_back_8, ess_glm_step_back, test = "Chisq")
+# AIC indicates the stepwise model is better. ANOVA indicates that the simpler 
+# model, ess_glm_mod_back_8, is better. Check with the rule of thumb.
+# Restricting the number of predictors by following the rule of thumb of m/10
+# m/10 for ESS
+table(clean_data2$ESS)
+74/10
+# The new model is better and will be used to explain ESS.
+summary(ess_glm_mod_back_8)
 
 
 # There are 74 participants who experience sleep disturbance according to ESS.
