@@ -170,7 +170,7 @@ table(clean_data2$ESS)
 74 / 10
 # 7 predictors/degrees of freedom that can be used in the ESS model
 
-#NOTE - because its negative beta coefficent 
+#NOTE 
 # Get the Odds Ratio of the ESS model
 round(exp(ess_glm_step_back$coefficients),2)
 
@@ -198,7 +198,7 @@ table(clean_data2$PSQIS)
 85 / 15
 # 5 predictors/degrees of freedom that can be used in the PSQIS model
 
-#NOTE - because its negative beta coefficent 
+#NOTE 
 # Get the Odds Ratio of the PSQIS model
 round(exp(psqis_glm_step_back$coefficients),2)
 
@@ -232,7 +232,7 @@ table(clean_data2$AIS)
 117/15
 # 7 predictors/degrees of freedom that can be used in the AIS model
 
-
+#NOTE 
 # Get the Odds Ratio of the AIS model
 round(exp(ais_glm_step_back$coefficients),2)
 
@@ -260,7 +260,7 @@ table(clean_data2$BSS)
 106/15
 # 7 predictors/degrees of freedom that can be used in the BSS model
 
-#NOTE - because its negative beta coefficent 
+#NOTE 
 # Get the Odds Ratio of the BSS model
 round(exp(bss_glm_step_back$coefficients),2)
 
@@ -323,3 +323,4 @@ ais_glm_mod_full_new <- glm(AIS~., data = clean_data_ais_model_new,
                             family="binomial")
 ais_glm_step_back_new <- stepAIC(ais_glm_mod_full_new,trace = F)
 summary(ais_glm_step_back_new)
+
