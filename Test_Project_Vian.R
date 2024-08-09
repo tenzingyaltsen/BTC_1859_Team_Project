@@ -111,7 +111,7 @@ any(is.na(imp_stoch))
 summary(imp_stoch)
 # Plot the newly imputed data. 
 xyplot(imp_stoch, PSQIS ~ Age)
-xyplot(imp_stoch, Age ~ Sub)
+xyplot(imp_stoch, Age ~ Subject)
 xyplot(imp_stoch, BMI ~ Age)
 xyplot(imp_stoch, ESS ~ Age)
 xyplot(imp_stoch, AIS ~ Age)
@@ -292,20 +292,47 @@ sleep_mcs <- lm(SF36.MCS ~ ESS + PSQIS + AIS + BSS, data = clean_data2)
 sleep_pcs <- lm(SF36.PCS ~ ESS + PSQIS + AIS + BSS, data = clean_data2)
 summary(sleep_mcs)
 summary(sleep_pcs)
+#' Create a linear regression model for sleep disturbance and QOL 
+#' (WITHOUT PSQIS).
+sleep_mcs_no_psqis <- lm(SF36.MCS ~ ESS + AIS + BSS, data = clean_data2)
+sleep_pcs_no_psqis <- lm(SF36.PCS ~ ESS + AIS + BSS, data = clean_data2)
+summary(sleep_mcs_no_psqis)
+#' PSQIS was significant in full model, both models have signficance for
+#' same variables.
+summary(sleep_pcs_no_psqis)
+#' PSQIS not significant in full, both models have significance for
+#' same variables.
 
 # Get the confidence intervals of the beta coefficient of each model.
 confint(sleep_mcs)
 confint(sleep_pcs)
+#' Get the confidence intervals of the beta coefficient of each model.
+#' (WITHOUT PSQIS).
+confint(sleep_mcs_no_psqis)
+confint(sleep_pcs_no_psqis)
 
 # Visualize the residuals of the linear regression models.
 hist(resid(sleep_mcs))
 hist(resid(sleep_pcs))
+#' Visualize the residuals of the linear regression models.
+#' (WITHOUT PSQIS).
+hist(resid(sleep_mcs_no_psqis))
+hist(resid(sleep_pcs_no_psqis))
 
+# Compare models with and without PSQIS.
+anova(sleep_mcs_no_psqis,sleep_mcs)
+AIC(sleep_mcs)
+AIC(sleep_mcs_no_psqis)
+#' Full model has lower AIC and anova is significant, meaning full model 
+#' is better.
+anova(sleep_pcs_no_psqis,sleep_pcs)
+AIC(sleep_pcs)
+AIC(sleep_pcs_no_psqis)
+#' Full model has lower AIC BUT anova is significant, meaning smaller model 
+#' is better. Based on this as well as comparing the summaries, we pick
+#' smaller model.
 
-
-
-
-
+# Anything below is notes only.
 # Create backward step-wise model for ESS as sleep disturbance measure.
 clean_data_ess_model_new <- subset(clean_data2, 
                                    select=c(-Subject, -PSQIS, -BSS, -AIS,
