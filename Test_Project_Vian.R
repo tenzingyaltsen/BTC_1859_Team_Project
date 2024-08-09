@@ -367,4 +367,3 @@ ais_glm_mod_full_new <- glm(AIS~., data = clean_data_ais_model_new,
                             family="binomial")
 ais_glm_step_back_new <- stepAIC(ais_glm_mod_full_new,trace = F)
 summary(ais_glm_step_back_new)
-
