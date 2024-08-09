@@ -308,6 +308,7 @@ round(exp(ess_glm_mod_back_7$coefficients),2)
 round(exp(confint(ess_glm_mod_back_7)),2)
 
 plot(fitted(ess_glm_mod_back_7),resid(ess_glm_mod_back_7))
+qqnorm(resid(ess_glm_mod_back_7))
 
 # Logistic regression for PSQIS
 
