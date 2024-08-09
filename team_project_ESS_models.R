@@ -163,8 +163,9 @@ print(paste0("Prevalence of sleep disturbance according to any questionnaire: ",
 
 # Based on literature, these predictor, have the greatest influence on sleep disturbance. 
 # Corticosteroid (1), depression (1), BMI (1), liver diagnosis (4), 
-# graft dysfunction/rejection (1), fibrosis (1), renal failure (1), gender (1)
-# There is a total of 11 degree of freedom (df) from the predictors above.
+# graft dysfunction/rejection (1), fibrosis (1), renal failure (1), gender (1), 
+# and Time from transplantation (1).
+# There is a total of 12 degree of freedom (df) from the predictors above.
 
 
 # Logistic regression for ESS
@@ -305,6 +306,8 @@ round(exp(ess_glm_mod_back_7$coefficients),2)
 
 # Get the confidence interval of the Odds Ratio of the ESS model
 round(exp(confint(ess_glm_mod_back_7)),2)
+
+plot(fitted(ess_glm_mod_back_7),resid(ess_glm_mod_back_7))
 
 # Logistic regression for PSQIS
 
