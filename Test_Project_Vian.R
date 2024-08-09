@@ -87,6 +87,23 @@ apply(is.na(working_data1),2,sum)
 # Check the number of 0's and NA's, and its respective frequencies
 status(working_data1)
 
+# Create a new dataframe with the variables and create a new column indicating
+# 0 if PSQI is not missing, and 1 if PSQI is missing.
+NA_check_data <- raw_data %>%
+  mutate(missing_PSQI = 
+           ifelse(is.na(Pittsburgh.Sleep.Quality.Index.Score), 1, 0))
+
+NA_check_data <- NA_check_data[,c(2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 95)]
+NA_check_data <- NA_check_data %>%
+  mutate(across(c("Gender", "Employment", "Marital.Status", "Education", "Ethnicity",
+                  "Household.income", "missing_PSQI"), as.factor))
+
+# Fit a logistic regression model to see if missingness of PSQI is related to 
+# observed variables
+PSQI_NA_model <- glm(missing_PSQI ~., 
+                     data = NA_check_data, family = binomial)
+summary(PSQI_NA_model)
+
 # Imputation with stochastic regression.
 imp_stoch <- mice(working_data1, method = "norm.nob", seed = 32,
                   m = 1, print = FALSE)
