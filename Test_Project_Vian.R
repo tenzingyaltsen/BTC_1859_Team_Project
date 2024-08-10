@@ -173,7 +173,7 @@ prev_any <- (length(which(clean_data2$ESS == 1 | clean_data2$PSQIS == 1 |
 print(paste0("Prevalence of sleep disturbance according to any questionnaire: ", prev_any))
 
 # Based on literature, these predictor, have the greatest influence on sleep disturbance. 
-# Corticosteroid (1), depression (1), BMI (1), liver diagnosis (4), 
+# Corticosteroid (1), depression (1), BMI (1), liver diagnosis (4), time from transplant (1),
 # graft dysfunction/rejection (1), fibrosis (1), renal failure (1), gender (1)
 # There is a total of 11 degree of freedom (df) from the predictors above.
 
