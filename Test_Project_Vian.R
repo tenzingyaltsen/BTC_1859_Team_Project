@@ -166,33 +166,149 @@ print(paste0("Prevalence of sleep disturbance according to any questionnaire: ",
 # graft dysfunction/rejection (1), fibrosis (1), renal failure (1), gender (1)
 # There is a total of 11 degree of freedom (df) from the predictors above.
 
-
-# Logistic regression for ESS
+########################################################
+#                                                      #
+# Create logistic regression model for ESS as response.#
+#                                                      #
+########################################################
 
 # Select relevant columns for logistic regression model
 clean_data_ess_model <- subset(clean_data2, 
                                select=c(Corticoid, Depression, BMI, Liver.diag,
-                                        RGD, Any.fibro, Renal.fail, Gender, ESS))
+                                        RGD, Any.fibro, Renal.fail, Gender, 
+                                        TFT, ESS))
 
-# Based the relevant predictors based on literature, use stepwise variable selection to obtain a model with optimal fit
+# Create a logistic regression model with all selected predictors from literature
 ess_glm_mod_full <- glm(ESS ~., data = clean_data_ess_model, family="binomial")
+summary(ess_glm_mod_full)
+
+# Find best fitted logistic regression model using stepAIC
 ess_glm_step_back <- stepAIC(ess_glm_mod_full,trace = F)
 summary(ess_glm_step_back)
 
+# Manually removing variables based on p-values. 
+# Remove Renal.fail 
+ess_glm_mod_back_1 <- glm(ESS ~ Corticoid + Depression + BMI + Liver.diag + 
+                            RGD + Any.fibro + Gender + TFT, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_1)
+
+# Compare this model without Renal.fail with the full model
+AIC(ess_glm_mod_full)
+AIC(ess_glm_mod_back_1)
+anova(ess_glm_mod_full, ess_glm_mod_back_1, test = "Chisq")
+
+# Remove BMI as that had the highest p-value in ess_glm_mod_back_1
+ess_glm_mod_back_2 <- glm(ESS ~ Corticoid + Depression + Liver.diag + 
+                            RGD + Any.fibro + Gender +TFT, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_2)
+
+# Compare this model without BMI with the previous model
+AIC(ess_glm_mod_back_1)
+AIC(ess_glm_mod_back_2)
+anova(ess_glm_mod_back_1, ess_glm_mod_back_2, test = "Chisq")
+
+# AIC and anova showed that the simpler model is better. Remove
+# TFT as a variable from the model.
+ess_glm_mod_back_3 <- glm(ESS ~ Corticoid + Depression + Liver.diag + Any.fibro +
+                            RGD + Gender, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_3)
+
+# Compare this model without Any.fibro with the previous model
+AIC(ess_glm_mod_back_2)
+AIC(ess_glm_mod_back_3)
+anova(ess_glm_mod_back_2, ess_glm_mod_back_3, test = "Chisq")
+
+# The simpler model is better. Remove Any.fibro next.
+ess_glm_mod_back_4 <- glm(ESS ~ Corticoid + Depression + Liver.diag + 
+                            RGD + Gender, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_4)
+
+# Compare this model without Any.fibro with the previous model
+AIC(ess_glm_mod_back_3)
+AIC(ess_glm_mod_back_4)
+anova(ess_glm_mod_back_3, ess_glm_mod_back_4, test = "Chisq")
+
+# The simpler model is better according to both AIC and anova. Two of the levels
+# of Liver.diag had the highest p-values. Let's remove Gender.
+ess_glm_mod_back_5 <- glm(ESS ~ Corticoid + Depression + Liver.diag + RGD, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_5)
+
+# Compare this model without Gender with the previous model
+AIC(ess_glm_mod_back_4)
+AIC(ess_glm_mod_back_5)
+anova(ess_glm_mod_back_4, ess_glm_mod_back_5, test = "Chisq")
+
+# The simpler model was better. Remove Depression.
+ess_glm_mod_back_6 <- glm(ESS ~ Corticoid + Liver.diag + RGD, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_6)
+
+# Compare this model without Depression with the previous model
+AIC(ess_glm_mod_back_5)
+AIC(ess_glm_mod_back_6)
+anova(ess_glm_mod_back_5, ess_glm_mod_back_6, test = "Chisq")
+
+# Simpler model is better. Try removing RGD next.
+ess_glm_mod_back_7 <- glm(ESS ~ Corticoid + Liver.diag, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_7)
+
+# Compare this model without Depression with the previous model
+AIC(ess_glm_mod_back_6)
+AIC(ess_glm_mod_back_7)
+anova(ess_glm_mod_back_6, ess_glm_mod_back_7, test = "Chisq")
+
+# Simpler model was better. Try removing Corticoid.
+ess_glm_mod_back_8 <- glm(ESS ~ Liver.diag, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_8)
+
+# Compare this model without Corticoid with the previous model
+AIC(ess_glm_mod_back_7)
+AIC(ess_glm_mod_back_8)
+anova(ess_glm_mod_back_7, ess_glm_mod_back_8, test = "Chisq")
+
+# More complex is better. Remove Liver.diag instead next.
+ess_glm_mod_back_9 <- glm(ESS ~ Corticoid, 
+                          data = clean_data_ess_model, family = "binomial")
+summary(ess_glm_mod_back_9)
+
+# Compare this model without Liver.diag with the previous model
+AIC(ess_glm_mod_back_7)
+AIC(ess_glm_mod_back_9)
+anova(ess_glm_mod_back_7, ess_glm_mod_back_9, test = "Chisq")
+
+# More complex is better. Compare this final model, ess_glm_mod_back_7, with the 
+# previous stepwise model.
+AIC(ess_glm_mod_back_7)
+AIC(ess_glm_step_back)
+anova(ess_glm_mod_back_7, ess_glm_step_back, test = "Chisq")
+# AIC indicates the stepwise model is better. ANOVA indicates that the simpler 
+# model, ess_glm_mod_back_7, is better. Check with the rule of thumb.
 # Restricting the number of predictors by following the rule of thumb of m/10
-# m/10 for ESS
+# m/10 for ESS.
 table(clean_data2$ESS)
 # There are 74 participants who experience sleep disturbance according to ESS.
 # Whereas, there are 194 participants who do not experience sleep disturbance.
 74 / 10
 # 7 predictors/degrees of freedom that can be used in the ESS model
+# The new model is better, since it has less than 7 degrees of freedom. It will 
+# be used to explain ESS.
+ess_glm_mod_back_7
+summary(ess_glm_mod_back_7)
 
 #NOTE 
 # Get the Odds Ratio of the ESS model
-round(exp(ess_glm_step_back$coefficients),2)
+round(exp(ess_glm_mod_back_7$coefficients),2)
 
 # Get the confidence interval of the Odds Ratio of the ESS model
-round(exp(confint(ess_glm_step_back)),2)
+round(exp(confint(ess_glm_mod_back_7)),2)
+
 
 
 # Logistic regression for PSQIS
