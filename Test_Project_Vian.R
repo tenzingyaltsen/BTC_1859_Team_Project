@@ -602,6 +602,16 @@ AIC(sleep_pcs_no_psqis)
 #' is better. Based on this as well as comparing the summaries, we pick
 #' smaller model.
 
+# Plot empirical CDF (quantiles) against the theoretical from a normal distribution
+# SF36.MCS
+qqnorm(resid(sleep_mcs))
+qqline(resid(sleep_mcs), col=2)
+
+# SF36.PCS
+qqnorm(resid(sleep_pcs_no_psqis))
+qqline(resid(sleep_pcs_no_psqis), col=2)
+
+
 # Anything below is notes only.
 # Create backward step-wise model for ESS as sleep disturbance measure.
 clean_data_ess_model_new <- subset(clean_data2, 
