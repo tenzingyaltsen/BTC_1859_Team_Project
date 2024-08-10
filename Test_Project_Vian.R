@@ -166,6 +166,7 @@ print(paste0("Prevalence of sleep disturbance according to any questionnaire: ",
 # graft dysfunction/rejection (1), fibrosis (1), renal failure (1), gender (1)
 # There is a total of 11 degree of freedom (df) from the predictors above.
 
+
 ########################################################
 #                                                      #
 # Create logistic regression model for ESS as response.#
@@ -312,6 +313,11 @@ round(exp(ess_glm_mod_back_7$coefficients),2)
 # Get the confidence interval of the Odds Ratio of the ESS model
 round(exp(confint(ess_glm_mod_back_7)),2)
 
+########################################################
+#                                                      #
+# End of logistic regression model for ESS as response.#
+#                                                      #
+########################################################
 
 
 # Logistic regression for PSQIS
@@ -340,6 +346,7 @@ round(exp(psqis_glm_step_back$coefficients),2)
 
 # Get the confidence interval of the Odds Ratio of the PSQIS model
 round(exp(confint(psqis_glm_step_back)),2)
+
 
 ########################################################
 #                                                      #
@@ -453,8 +460,7 @@ ais_glm_mod_6_data <- subset(clean_data2,
 ais_glm_mod_6 <- glm(AIS ~., data = ais_glm_mod_6_data, family="binomial")
 summary(ais_glm_mod_5)
 summary(ais_glm_mod_6)
-#' TFT no longer significant. 
-#' Next to remove would be TFT.
+#' TFT no longer significant. #' Next to remove would be TFT.
 anova(ais_glm_mod_6,ais_glm_mod_5, test = "Chisq")
 # ANOVA reveals no difference, smaller model better.
 AIC(ais_glm_mod_5)
@@ -478,17 +484,17 @@ AIC(ais_glm_mod_7)
 
 # Using step-wise and comparing it with manual model for AIS.
 ais_glm_step_back <- stepAIC(ais_glm_mod_full,trace = F)
-summary(ais_glm_step_back_new)
+summary(ais_glm_step_back)
 
 anova(ais_glm_mod_6, ais_glm_step_back)
-AIC(ais_glm_step_back_new)
+AIC(ais_glm_step_back)
 AIC(ais_glm_mod_6)
 # They're the same model!
 
 # Get beta coefficients and p-values of the AIS model.
 summary(ais_glm_mod_6)
 # Get the odds ratios of the AIS model.
-round(exp(ais_glm_mod_6_data$coefficients),2)
+round(exp(ais_glm_mod_6$coefficients),2)
 # Get the confidence intervals of the odds ratios of the AIS model.
 round(exp(confint(ais_glm_mod_6)),2)
 
@@ -498,64 +504,172 @@ round(exp(confint(ais_glm_mod_6)),2)
 #                                                               #
 #################################################################
 
-# Select relevant columns for logistic regression model
-clean_data_ais_model <- subset(clean_data2, 
-                               select=c(Corticoid, Depression, BMI, Liver.diag,
-                                        RGD, Any.fibro, Renal.fail, Gender, AIS))
 
-# Based the relevant predictors based on literature, use stepwise variable selection to obtain a model with optimal fit
-ais_glm_mod_full <- glm(AIS ~., data = clean_data_ais_model, family="binomial")
-ais_glm_step_back <- stepAIC(ais_glm_mod_full,trace = F)
-summary(ais_glm_step_back)
+########################################################
+#                                                      #
+# Create logistic regression model for BSS as response.#
+#                                                      #
+########################################################
 
-#NOTE
-ais_glm_mod_2 <- glm(AIS ~ Depression + Any.fibro + Corticoid + RGD + Gender + Renal.fail,
-                     data = clean_data_ais_model, family="binomial")
-summary(ais_glm_mod_2)
-anova(ais_glm_step_back, ais_glm_mod_2, test = "Chisq")
-
-# Restricting the number of predictors by following the rule of thumb of m/15
-# m/15 for AIS
-table(clean_data2$AIS)
-# There are 151 participants who experience sleep disturbance according to ESS.
-# Whereas, there are 117 participants who do not experience sleep disturbance.
-117/15
-# 7 predictors/degrees of freedom that can be used in the AIS model
-
-#NOTE 
-# Get the Odds Ratio of the AIS model
-round(exp(ais_glm_step_back$coefficients),2)
-
-# Get the confidence interval of the Odds Ratio of the AIS model
-round(exp(confint(ais_glm_step_back)),2)
-
-
-# Logistic regression for BSS
-
-# Select relevant columns for logistic regression model
+#' Manually create a model to predict BSS without using step-wise function.
+#' Create starting data set with pool of variables to start with, based 
+#' on literature.
 clean_data_bss_model <- subset(clean_data2, 
-                               select=c(Corticoid, Depression, BMI, Liver.diag,
-                                        RGD, Any.fibro, Renal.fail, Gender, BSS))
+                               select=c(Corticoid, Depression, BMI, 
+                                        Liver.diag, RGD, Any.fibro, 
+                                        Renal.fail, Gender, BSS, TFT))
 
-# Based the relevant predictors based on literature, use stepwise variable selection to obtain a model with optimal fit
+#' There are 106 participants who experience sleep disturbance 
+#' according to BSS and 162 participants who do not. Using p < m/10:
+106/10
+# 10 predictors/degrees of freedom that can be used in the BSS model.
+
+# Create our full model based on above variables selected.
 bss_glm_mod_full <- glm(BSS ~., data = clean_data_bss_model, family="binomial")
+#' Find which variable to remove using highest p-value from summary(). Also
+#' check collinearity.
+summary(bss_glm_mod_full)
+vif(bss_glm_mod_full)
+# All values are less than 5, passes collinearity check.
+
+#' Remove Renal.fail since it has the highest p-value.
+bss_glm_mod_1_data <- subset(clean_data2, 
+                             select=c(Corticoid, Depression, BMI, 
+                                      Liver.diag, RGD, Any.fibro, 
+                                      Gender, BSS, TFT))
+bss_glm_mod_1 <- glm(BSS ~., data = bss_glm_mod_1_data, family="binomial")
+# Compare summaries of the models.
+summary(bss_glm_mod_full)
+summary(bss_glm_mod_1)
+# Same variables are significant. Next to remove would be Depression.
+anova(bss_glm_mod_1,bss_glm_mod_full, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_full)
+AIC(bss_glm_mod_1)
+#' Smaller model has slightly higher AIC, but due to p < m/10 and non- 
+#' significant analysis of deviance, we proceed with next variable removal.
+
+#' Remove Depression since it has the highest p-value.
+bss_glm_mod_2_data <- subset(clean_data2, 
+                             select=c(Corticoid, BMI, Liver.diag,
+                                      RGD, Any.fibro, BSS, Gender, TFT))
+bss_glm_mod_2 <- glm(BSS ~., data = bss_glm_mod_2_data, family="binomial")
+summary(bss_glm_mod_1)
+summary(bss_glm_mod_2)
+# Same variables are significant. Next to remove would be Any.fibro.
+anova(bss_glm_mod_2,bss_glm_mod_1, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_1)
+AIC(bss_glm_mod_2)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove Any.fibro since it has the highest p-value (do not count 
+#' Liver.diag since one of the levels has a lower p-value).
+bss_glm_mod_3_data <- subset(clean_data2, 
+                             select=c(Corticoid, BMI, Liver.diag,
+                                      RGD, BSS, Gender, TFT))
+bss_glm_mod_3 <- glm(BSS ~., data = bss_glm_mod_3_data, family="binomial")
+summary(bss_glm_mod_2)
+summary(bss_glm_mod_3)
+# Same variables are significant. Next to remove would be Gender.
+anova(bss_glm_mod_3,bss_glm_mod_2, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_2)
+AIC(bss_glm_mod_3)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove Gender since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value). 
+bss_glm_mod_4_data <- subset(clean_data2, 
+                             select=c(Corticoid, BMI, Liver.diag,
+                                      RGD, BSS, TFT))
+bss_glm_mod_4 <- glm(BSS ~., data = bss_glm_mod_4_data, family="binomial")
+summary(bss_glm_mod_3)
+summary(bss_glm_mod_4)
+# Same variables are significant. Next to remove would be Corticoid.
+anova(bss_glm_mod_4,bss_glm_mod_3, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_3)
+AIC(bss_glm_mod_4)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove Corticoid since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value). 
+bss_glm_mod_5_data <- subset(clean_data2, 
+                             select=c(BMI, Liver.diag, RGD, BSS, TFT))
+bss_glm_mod_5 <- glm(BSS ~., data = bss_glm_mod_5_data, family="binomial")
+summary(bss_glm_mod_4)
+summary(bss_glm_mod_5)
+#' Same variables are significant. Next to remove would be RGD. 
+#' Next to remove would be Liver.diag.
+anova(bss_glm_mod_5,bss_glm_mod_4, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_4)
+AIC(bss_glm_mod_5)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove RGD since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value). 
+bss_glm_mod_6_data <- subset(clean_data2, 
+                             select=c(BMI, Liver.diag, BSS, TFT))
+bss_glm_mod_6 <- glm(BSS ~., data = bss_glm_mod_6_data, family="binomial")
+summary(bss_glm_mod_5)
+summary(bss_glm_mod_6)
+#' Same variables are significant. Next to remove would be Liver.diag. 
+anova(bss_glm_mod_6,bss_glm_mod_5, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_5)
+AIC(bss_glm_mod_6)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove Liver.diag since it has the highest p-value.
+bss_glm_mod_7_data <- subset(clean_data2, 
+                             select=c(BMI, BSS, TFT))
+bss_glm_mod_7 <- glm(BSS ~., data = bss_glm_mod_7_data, family="binomial")
+summary(bss_glm_mod_6)
+summary(bss_glm_mod_7)
+#' Same variables are significant. Next to remove would be TFT. 
+anova(bss_glm_mod_7,bss_glm_mod_6, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_6)
+AIC(bss_glm_mod_7)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove TFT since it has the highest p-value.
+bss_glm_mod_8_data <- subset(clean_data2, 
+                             select=c(BMI, BSS))
+bss_glm_mod_8 <- glm(BSS ~., data = bss_glm_mod_8_data, family="binomial")
+summary(bss_glm_mod_7)
+summary(bss_glm_mod_8)
+#' Same variables are significant. No more predictors to remove. 
+anova(bss_glm_mod_8,bss_glm_mod_7, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(bss_glm_mod_7)
+AIC(bss_glm_mod_8)
+# Smaller model has higher AIC. Let's go back to previous model (model 7).
+
+# Using step-wise and comparing it with manual model for BSS.
 bss_glm_step_back <- stepAIC(bss_glm_mod_full,trace = F)
 summary(bss_glm_step_back)
 
-# Restricting the number of predictors by following the rule of thumb of m/15
-# m/15 for BSS
-table(clean_data2$BSS)
-# There are 106 participants who experience sleep disturbance according to ESS.
-# Whereas, there are 162 participants who do not experience sleep disturbance.
-106/15
-# 7 predictors/degrees of freedom that can be used in the BSS model
+anova(bss_glm_mod_7, bss_glm_step_back)
+# ANOVA is significant, meaning larger step-wise model is better.
+AIC(bss_glm_step_back)
+AIC(bss_glm_mod_7)
+# Larger step-wise model has lower AIC. Proceed with this model.
 
-#NOTE 
-# Get the Odds Ratio of the BSS model
+# Get beta coefficients and p-values of the BSS model.
+summary(bss_glm_step_back)
+# Get the odds ratios of the BSS model.
 round(exp(bss_glm_step_back$coefficients),2)
-
-# Get the confidence interval of the Odds Ratio of the BSS model
+# Get the confidence intervals of the odds ratios of the BSS model.
 round(exp(confint(bss_glm_step_back)),2)
+
+#################################################################
+#                                                               #
+# End of logistic regression model creation for BSS as response.#
+#                                                               #
+#################################################################
 
 
 #Two Sample T-Test For the Mean for QOL
