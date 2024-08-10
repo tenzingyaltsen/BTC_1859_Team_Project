@@ -180,7 +180,10 @@ clean_data_ess_model <- subset(clean_data2,
 
 # Create a logistic regression model with all selected predictors from literature
 ess_glm_mod_full <- glm(ESS ~., data = clean_data_ess_model, family="binomial")
+# Look for which variables have the highest p values and check for collinearity
 summary(ess_glm_mod_full)
+vif(ess_glm_mod_full)
+# All values are less than 5, passes collinearity check.
 
 # Find best fitted logistic regression model using stepAIC
 ess_glm_step_back <- stepAIC(ess_glm_mod_full,trace = F)
