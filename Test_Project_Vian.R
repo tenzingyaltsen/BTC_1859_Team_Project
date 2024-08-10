@@ -1,3 +1,4 @@
+#### Exploratory Data Analysis ####
 #load and attach add-on packages, install them if necessary.
 library(dplyr)
 library(mice)
@@ -77,6 +78,8 @@ vars <- names(working_data1)
 descriptive(vars, working_data1)
 describe(working_data1)
 
+#### Data Cleaning/Wrangling ####
+
 # There are NA's found in the dataset. Check if there are any empty strings.
 which(working_data1 == "")
 # No blanks in data set.
@@ -137,6 +140,8 @@ clean_data2 <- clean_data1 %>%
                   "Renal.fail", "Depression", "Corticoid", "ESS", 
                   "PSQIS", "AIS", "BSS"), as.factor))
 
+#### Estimating Prevalence of Sleep Disturbance ####
+
 # Estimate prevalence of sleep disturbance
 # Create a function that estimates prevalence of sleep disturbance for each scale
 disturbed_sleep_preval <- function(scale, data) {
@@ -167,11 +172,11 @@ print(paste0("Prevalence of sleep disturbance according to any questionnaire: ",
 # There is a total of 11 degree of freedom (df) from the predictors above.
 
 
-#########################################################
-#                                                       #
-# Create logistic regression model for ESS as response. #
-#                                                       #
-#########################################################
+###############################################################
+####                                                       ####
+#### Create logistic regression model for ESS as response. ####
+####                                                       ####
+###############################################################
 
 #' Manually create a model to predict ESS without using step-wise function.
 #' Create starting data set with pool of variables to start with, based 
@@ -312,11 +317,11 @@ round(exp(confint(ess_glm_mod_7)),2)
 #                                                       #
 #########################################################
 
-###########################################################
-#                                                         #
-# Create logistic regression model for PSQIS as response. #
-#                                                         #
-###########################################################
+#################################################################
+####                                                         ####
+#### Create logistic regression model for PSQIS as response. ####
+####                                                         ####
+#################################################################
 
 # Manually create a model to predict PSQIS without using step-wise function.
 # Create starting data set with pool of variables to start with based 
@@ -503,39 +508,11 @@ round(exp(confint(psqis_glm_mod_5)),2)
 #                                                         #
 ###########################################################
 
-# Logistic regression for PSQIS
-
-# Select relevant columns for logistic regression model
-#clean_data_psqis_model <- subset(clean_data2, 
-                                 #select=c(Corticoid, Depression, BMI, Liver.diag,
-                                          # RGD, Any.fibro, Renal.fail, Gender, PSQIS))
-
-# Based the relevant predictors based on literature, use stepwise variable selection to obtain a model with optimal fit
-#psqis_glm_mod_full <- glm(PSQIS ~., data = clean_data_psqis_model, family="binomial")
-# psqis_glm_step_back <- stepAIC(psqis_glm_mod_full,trace = F)
-# summary(psqis_glm_step_back)
-
-# Restricting the number of predictors by following the rule of thumb of m/15
-# m/15 for PSQIS
-# table(clean_data2$PSQIS)
-# There are 183 participants who experience sleep disturbance according to ESS.
-# Whereas, there are 85 participants who do not experience sleep disturbance.
-# 85 / 15
-# 5 predictors/degrees of freedom that can be used in the PSQIS model
-
-#NOTE 
-# Get the Odds Ratio of the PSQIS model
-# round(exp(psqis_glm_step_back$coefficients),2)
-
-# Get the confidence interval of the Odds Ratio of the PSQIS model
-# round(exp(confint(psqis_glm_step_back)),2)
-
-
-#########################################################
-#                                                       #
-# Create logistic regression model for AIS as response. #
-#                                                       #
-#########################################################
+###############################################################
+####                                                       ####
+#### Create logistic regression model for AIS as response. ####
+####                                                       ####
+###############################################################
 
 #' Manually create a model to predict AIS without using step-wise function.
 #' Create starting data set with pool of variables to start with, based 
@@ -691,11 +668,11 @@ round(exp(confint(ais_glm_mod_6)),2)
 ##################################################################
 
 
-#########################################################
-#                                                       #
-# Create logistic regression model for BSS as response. #
-#                                                       #
-#########################################################
+###############################################################
+####                                                       ####
+#### Create logistic regression model for BSS as response. ####
+####                                                       ####
+###############################################################
 
 #' Manually create a model to predict BSS without using step-wise function.
 #' Create starting data set with pool of variables to start with, based 
@@ -862,7 +839,7 @@ round(exp(confint(bss_glm_step_back)),2)
 ##################################################################
 
 
-#Two Sample T-Test For the Mean for QOL
+####Two Sample T-Test For the Mean for QOL####
 #two samples - individuals with and without sleep disturbance
 
 # H0: μ1 = μ2 
@@ -1031,7 +1008,7 @@ t.test(bss_mcs_0$SF36.MCS, bss_mcs_1$SF36.MCS)
 
 #This will help prepare for the linear regression model.
 
-#Linear Regression Model 
+####Linear Regression Model####
 
 # Create a linear regression model for sleep disturbance and QOL
 sleep_mcs <- lm(SF36.MCS ~ ESS + PSQIS + AIS + BSS, data = clean_data2)
@@ -1087,7 +1064,7 @@ qqline(resid(sleep_mcs), col=2)
 qqnorm(resid(sleep_pcs_no_psqis))
 qqline(resid(sleep_pcs_no_psqis), col=2)
 
-
+#### Notes ####
 # Anything below is notes only.
 # Create backward step-wise model for ESS as sleep disturbance measure.
 clean_data_ess_model_new <- subset(clean_data2, 
