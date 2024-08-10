@@ -99,7 +99,7 @@ status(working_data1)
 # Create a new data frame with the variables and create a new column 
 # indicating 0 if PSQIS is not missing, and 1 if PSQIS is missing.
 NA_check_data <- raw_data %>%
-  mutate(missing_PSQI = 
+  mutate(missing_PSQIS = 
            ifelse(is.na(Pittsburgh.Sleep.Quality.Index.Score), 1, 0))
 
 NA_check_data <- NA_check_data[,c(2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 95)]
@@ -110,7 +110,7 @@ NA_check_data <- NA_check_data %>%
 
 # Fit a logistic regression model to see if missingness of PSQIS is 
 # related to observed variables.
-PSQIS_NA_model <- glm(missing_PSQI ~., 
+PSQIS_NA_model <- glm(missing_PSQIS ~., 
                      data = NA_check_data, family = "binomial")
 summary(PSQIS_NA_model)
 
