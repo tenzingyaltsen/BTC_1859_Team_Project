@@ -167,11 +167,11 @@ print(paste0("Prevalence of sleep disturbance according to any questionnaire: ",
 # There is a total of 11 degree of freedom (df) from the predictors above.
 
 
-########################################################
-#                                                      #
-# Create logistic regression model for ESS as response.#
-#                                                      #
-########################################################
+#########################################################
+#                                                       #
+# Create logistic regression model for ESS as response. #
+#                                                       #
+#########################################################
 
 #' Manually create a model to predict ESS without using step-wise function.
 #' Create starting data set with pool of variables to start with, based 
@@ -306,17 +306,17 @@ round(exp(ess_glm_mod_7$coefficients),2)
 # Get the confidence intervals of the odds ratios of the ESS model.
 round(exp(confint(ess_glm_mod_7)),2)
 
-########################################################
-#                                                      #
-# End of logistic regression model for ESS as response.#
-#                                                      #
-########################################################
+#########################################################
+#                                                       #
+# End of logistic regression model for ESS as response. #
+#                                                       #
+#########################################################
 
-##################################################################
-#####                                                        #####
-##### Create logistic regression model for PSQIS as response #####
-#####                                                        #####
-##################################################################
+###########################################################
+#                                                         #
+# Create logistic regression model for PSQIS as response. #
+#                                                         #
+###########################################################
 
 # Manually create a model to predict PSQIS without using step-wise function.
 # Create starting data set with pool of variables to start with based 
@@ -326,13 +326,14 @@ clean_data_psqis_model <- subset(clean_data2,
                                           Liver.diag, RGD, Any.fibro, 
                                           Renal.fail, Gender, TFT, PSQIS))
 
-# There are 183 participants who experience sleep disturbance according
-# to PSQIS.
-# Whereas, there are 85 participants who do not experience sleep disturbance.
+#' There are 183 participants who experience sleep disturbance according
+#' to PSQIS. Whereas, there are 85 participants who do not experience 
+#' sleep disturbance.
 table(clean_data2$PSQIS)
-# Restricting the number of predictors by following the rule of thumb of m/10.
-85 / 15
-# 5 predictors/degrees of freedom that can be used in the PSQIS model.
+#' Restricting the number of predictors by following the rule of thumb of 
+#' p < m/10.
+85 / 10
+# 8 predictors/degrees of freedom that can be used in the PSQIS model.
 
 # Create our full model based on above variables selected.
 psqis_glm_mod_full <- glm(PSQIS ~., data = clean_data_psqis_model, 
@@ -496,11 +497,11 @@ round(exp(psqis_glm_mod_5$coefficients),2)
 # Get the confidence intervals of the odds ratios of the PSQIS model.
 round(exp(confint(psqis_glm_mod_5)),2)
 
-##################################################################
-#####                                                        #####
-##### End of logistic regression model for PSQIS as response #####
-#####                                                        #####
-##################################################################
+###########################################################
+#                                                         #
+# End of logistic regression model for PSQIS as response. #
+#                                                         #
+###########################################################
 
 # Logistic regression for PSQIS
 
@@ -530,11 +531,11 @@ round(exp(confint(psqis_glm_mod_5)),2)
 # round(exp(confint(psqis_glm_step_back)),2)
 
 
-########################################################
-#                                                      #
-# Create logistic regression model for AIS as response.#
-#                                                      #
-########################################################
+#########################################################
+#                                                       #
+# Create logistic regression model for AIS as response. #
+#                                                       #
+#########################################################
 
 #' Manually create a model to predict AIS without using step-wise function.
 #' Create starting data set with pool of variables to start with, based 
@@ -683,18 +684,18 @@ round(exp(ais_glm_mod_6$coefficients),2)
 # Get the confidence intervals of the odds ratios of the AIS model.
 round(exp(confint(ais_glm_mod_6)),2)
 
-#################################################################
-#                                                               #
-# End of logistic regression model creation for AIS as response.#
-#                                                               #
-#################################################################
+##################################################################
+#                                                                #
+# End of logistic regression model creation for AIS as response. #
+#                                                                #
+##################################################################
 
 
-########################################################
-#                                                      #
-# Create logistic regression model for BSS as response.#
-#                                                      #
-########################################################
+#########################################################
+#                                                       #
+# Create logistic regression model for BSS as response. #
+#                                                       #
+#########################################################
 
 #' Manually create a model to predict BSS without using step-wise function.
 #' Create starting data set with pool of variables to start with, based 
@@ -854,11 +855,11 @@ round(exp(bss_glm_step_back$coefficients),2)
 # Get the confidence intervals of the odds ratios of the BSS model.
 round(exp(confint(bss_glm_step_back)),2)
 
-#################################################################
-#                                                               #
-# End of logistic regression model creation for BSS as response.#
-#                                                               #
-#################################################################
+##################################################################
+#                                                                #
+# End of logistic regression model creation for BSS as response. #
+#                                                                #
+##################################################################
 
 
 #Two Sample T-Test For the Mean for QOL
