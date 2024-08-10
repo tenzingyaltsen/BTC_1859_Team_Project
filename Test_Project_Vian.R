@@ -94,6 +94,8 @@ apply(is.na(working_data1),2,sum)
 # Check the number of 0s and NAs, and their respective frequencies.
 status(working_data1)
 
+# 85 NAs (31.7%) for PSQIS, checking for Missing at Random (MAR) to see if
+# imputing data would be beneficial
 # Create a new data frame with the variables and create a new column 
 # indicating 0 if PSQIS is not missing, and 1 if PSQIS is missing.
 NA_check_data <- raw_data %>%
@@ -109,7 +111,7 @@ NA_check_data <- NA_check_data %>%
 # Fit a logistic regression model to see if missingness of PSQIS is 
 # related to observed variables.
 PSQIS_NA_model <- glm(missing_PSQI ~., 
-                     data = NA_check_data, family = binomial)
+                     data = NA_check_data, family = "binomial")
 summary(PSQIS_NA_model)
 
 # Imputation with stochastic regression.
