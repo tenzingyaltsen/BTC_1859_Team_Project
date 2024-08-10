@@ -1,5 +1,11 @@
 #### Exploratory Data Analysis ####
-#load and attach add-on packages, install them if necessary.
+# Load add-on packages, install them if necessary.
+install.packages("dplyr")
+install.packages("mice")
+install.packages("car")
+install.packages("MASS")
+install.packages("funModeling")
+install.packages("ggplot2")
 library(dplyr)
 library(mice)
 library(car)
@@ -9,7 +15,6 @@ library(ggplot2)
 
 # Import data.
 raw_data <- read.csv("project_data.csv")
-# View(raw_data)
 
 # Explore data.
 summary(raw_data)
@@ -19,7 +24,6 @@ names(raw_data)
 
 # Extract variables of interest.
 working_data <- raw_data[,c(1,2,3,9,16,18,19,20,24,42,46,58,70,75,77,85,86,87)]
-
 # Rename variables.
 working_data1 <- working_data %>%
   rename(TFT = "Time.from.transplant", 
@@ -35,11 +39,11 @@ working_data1 <- working_data %>%
 
 glimpse(working_data1)
 freq(working_data1)
-# plot_num generates all plots in one
+# plot_num() generates all plots in one.
 plot_num(working_data1)
-# Create a function that extracts descriptive statistics for a variable and
-# displays them in a graph
 
+# Create a function that extracts descriptive statistics for a variable 
+# and displays them in a graph.
 descriptive <- function(var, data){
   for (i in var) {
     var_data <- data[[i]]
@@ -73,37 +77,36 @@ descriptive <- function(var, data){
   }
 }
 
-# Specify the variables needed to conduct summary statistics
+# Specify the variables needed to conduct summary statistics.
 vars <- names(working_data1)
-# Conduct descriptive analysis
+# Conduct descriptive analysis.
 descriptive(vars, working_data1)
 describe(working_data1)
 
 #### Data Cleaning/Wrangling ####
 
-# There are NA's found in the dataset. Check if there are any empty strings.
+# There are NAs found in the dataset. Check if there are any empty strings.
 which(working_data1 == "")
 # No blanks in data set.
-
-# Count the number of NA's in the dataset.
+# Count the number of NAs in the dataset.
 apply(is.na(working_data1),2,sum) 
-
-# Check the number of 0's and NA's, and its respective frequencies
+# Check the number of 0s and NAs, and their respective frequencies.
 status(working_data1)
 
-# Create a new dataframe with the variables and create a new column indicating
-# 0 if PSQI is not missing, and 1 if PSQI is missing.
+# Create a new data frame with the variables and create a new column 
+# indicating 0 if PSQI is not missing, and 1 if PSQI is missing.
 NA_check_data <- raw_data %>%
   mutate(missing_PSQI = 
            ifelse(is.na(Pittsburgh.Sleep.Quality.Index.Score), 1, 0))
 
 NA_check_data <- NA_check_data[,c(2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 95)]
 NA_check_data <- NA_check_data %>%
-  mutate(across(c("Gender", "Employment", "Marital.Status", "Education", "Ethnicity",
-                  "Household.income", "missing_PSQI"), as.factor))
+  mutate(across(c("Gender", "Employment", "Marital.Status", "Education", 
+                  "Ethnicity", "Household.income", "missing_PSQI"), 
+                as.factor))
 
-# Fit a logistic regression model to see if missingness of PSQI is related to 
-# observed variables
+# Fit a logistic regression model to see if missingness of PSQI is 
+# related toobserved variables.
 PSQI_NA_model <- glm(missing_PSQI ~., 
                      data = NA_check_data, family = binomial)
 summary(PSQI_NA_model)
@@ -111,7 +114,6 @@ summary(PSQI_NA_model)
 # Imputation with stochastic regression.
 imp_stoch <- mice(working_data1, method = "norm.nob", seed = 32,
                   m = 1, print = FALSE)
-any(is.na(imp_stoch))
 summary(imp_stoch)
 # Plot the newly imputed data. 
 xyplot(imp_stoch, PSQIS ~ Age)
@@ -119,21 +121,22 @@ xyplot(imp_stoch, Age ~ Subject)
 xyplot(imp_stoch, BMI ~ Age)
 xyplot(imp_stoch, ESS ~ Age)
 xyplot(imp_stoch, AIS ~ Age)
-xyplot(imp_stoch, BSS ~ Age) # >0.5 will count as 1 and <0.5 will count as 0
+xyplot(imp_stoch, BSS ~ Age) 
+# For BSS, imputed values of > 0.5 will count as 1 while imputed values 
+# of < 0.5 will count as 0.
 xyplot(imp_stoch, SF36.PCS ~ Age)
 xyplot(imp_stoch, SF36.MCS ~ Age)
 
-# Convert from mids to dataframe.
+# Convert from mids object to data frame.
 imp_stoch_df <- complete(imp_stoch)
-
 # Convert sleep disturbance measurements to binary.
 clean_data1 <- imp_stoch_df %>%
   mutate(ESS = ifelse(ESS > 10, 1, 0)) %>%
   mutate(PSQIS = ifelse(PSQIS > 4, 1, 0)) %>%
   mutate(AIS = ifelse(AIS > 5, 1, 0)) %>%
-  # 4 of the imputed variables are above 0.5; 2 of the imputed variables are
-  # below 0.5
   mutate(BSS = ifelse(BSS > 0.5, 1, 0))
+  # Note that for BSS, 4 of the imputed variables are above 0.5 while
+  # 2 of the imputed variables are below 0.5.
 
 # Change categorical variables to factors.
 clean_data2 <- clean_data1 %>% 
@@ -335,7 +338,8 @@ psqis_glm_mod_full <- glm(PSQIS ~., data = clean_data_psqis_model,
 summary(psqis_glm_mod_full)
 vif(psqis_glm_mod_full)
 # All values are less than 5, passes collinearity check.
-# Renal.fail has highest p-value, should be removed
+
+# Renal.fail has highest p-value, should be removed.
 psqis_glm_mod_1_data <- subset(clean_data2, 
                                select=c(Corticoid, Depression, BMI, 
                                         Liver.diag, RGD, Any.fibro,
@@ -345,18 +349,19 @@ psqis_glm_mod_1 <- glm(PSQIS ~., data = psqis_glm_mod_1_data,
 # Comparing summaries between full model and model 1.
 # Full model has Gender, Any.fibro, and Depression that are significant.
 # BMI is near significance (p < 0.1)
-# Same variables are significant and near significance in model 1. 
-# RGD has highest p-value in model 1, should be removed next
+# Same variables are significant and near significance as in model 1. 
+# RGD has highest p-value in model 1, should be removed next.
 summary(psqis_glm_mod_full)
 summary(psqis_glm_mod_1)
-# Testing ANOVA for differences between the models
-# p- value > 0.05, no significant difference, smaller model is better
+# Testing ANOVA for differences between the models.
+# p-value > 0.05, no significant difference, smaller model is better.
 anova(psqis_glm_mod_1, psqis_glm_mod_full, test = "Chisq")
-# Smaller model has slightly larger AIC, but AIC values are very similar
-# Will continue to proceed with next variable removal
+# Smaller model has slightly larger AIC, but AIC values are very similar.
+# Will continue to proceed with next variable removal.
 AIC(psqis_glm_mod_full)
 AIC(psqis_glm_mod_1)
-# RGD is the next variable to be removed
+
+# RGD is the next variable to be removed.
 psqis_glm_mod_2_data <- subset(clean_data2, 
                                select=c(Corticoid, Depression, BMI, 
                                         Liver.diag, Any.fibro,
@@ -365,16 +370,17 @@ psqis_glm_mod_2 <- glm(PSQIS ~., data = psqis_glm_mod_2_data,
                        family = "binomial")
 # Comparing summaries between model 1 and model 2.
 # Model 1 has Gender, Any.fibro, and Depression that are significant.
-# BMI is near significance (p < 0.1)
+# BMI is near significance (p < 0.1).
 # Same variables are significant and near significance in model 2. 
-# Corticoid has highest p-value in model 2, should be removed next
+
+# Corticoid has highest p-value in model 2, should be removed next.
 summary(psqis_glm_mod_1)
 summary(psqis_glm_mod_2)
-# Testing ANOVA for differences between the models
-# p- value > 0.05, no significant difference, smaller model is better
+# Testing ANOVA for differences between the models.
+# p-value > 0.05, no significant difference, smaller model is better.
 anova(psqis_glm_mod_2, psqis_glm_mod_1, test = "Chisq")
-# Smaller model has lower AIC
-# Will continue to proceed with next variable removal
+# Smaller model has lower AIC.
+# Will continue to proceed with next variable removal.
 AIC(psqis_glm_mod_1)
 AIC(psqis_glm_mod_2)
 # Corticoid is the next variable to be removed
@@ -385,23 +391,24 @@ psqis_glm_mod_3_data <- subset(clean_data2,
 psqis_glm_mod_3 <- glm(PSQIS ~., data = psqis_glm_mod_3_data,
                        family = "binomial")
 # Comparing summaries between model 2 and model 3.
-# Model 2 has Gender, Any.fibro, and Depression that are significant.
-# BMI is near significance (p < 0.1)
-# In model 3, Any.fibro has the highest level of significance (p < 0.01)
+# Model 2 has Gender, Any.fibro, and Depression that are significant and
+# BMI is near significance (p < 0.1).
+# In model 3, Any.fibro has the highest level of significance (p < 0.01),
 # Gender and Depression are still at same level of significance (p < 0.05)
-# BMI is still near significance (p < 0.1)
+# and BMI is still near significance (p < 0.1).
 # TFT has highest p-value in model 3, should be removed next (do not count 
-# Liver.diag since one of the levels has a lower p-value)
+# Liver.diag since one of the levels has a lower p-value).
 summary(psqis_glm_mod_2)
 summary(psqis_glm_mod_3)
-# Testing ANOVA for differences between the models
-# p- value > 0.05, no significant difference, smaller model is better
+# Testing ANOVA for differences between the models.
+# p-value > 0.05, no significant difference, smaller model is better.
 anova(psqis_glm_mod_3, psqis_glm_mod_2, test = "Chisq")
-# Smaller model has lower AIC
-# Will continue to proceed with next variable removal
+# Smaller model has lower AIC.
+# Will continue to proceed with next variable removal.
 AIC(psqis_glm_mod_2)
 AIC(psqis_glm_mod_3)
-# TFT is the next variable to be removed
+
+# TFT is the next variable to be removed.
 psqis_glm_mod_4_data <- subset(clean_data2, 
                                select=c(Depression, BMI, 
                                         Liver.diag, Any.fibro,
@@ -409,46 +416,48 @@ psqis_glm_mod_4_data <- subset(clean_data2,
 psqis_glm_mod_4 <- glm(PSQIS ~., data = psqis_glm_mod_4_data,
                        family = "binomial")
 # Comparing summaries between model 3 and model 4.
-# In model 3, Any.fibro has the highest level of significance (p < 0.01)
-# Gender and Depression are at same level of significance (p < 0.05)
-# BMI is near significance (p < 0.1)
-# In model 4, Depression has the highest level of significance (p < 0.01)
-# Gender and Any.fibro are at same level of significance (p < 0.05)
+# In model 3, Any.fibro has the highest level of significance (p < 0.01),
+# Gender and Depression are at same level of significance (p < 0.05) and
+# BMI is near significance (p < 0.1).
+# In model 4, Depression has the highest level of significance (p < 0.01),
+# Gender and Any.fibro are at same level of significance (p < 0.05) and
 # BMI is still near significance (p < 0.1)
-# When considering all levels of Liver.diag, the variable still has the highest
-# p-value in model 4; should be removed next
+# When considering all levels of Liver.diag, the variable still has the 
+# highest p-value in model 4, should be removed next.
 summary(psqis_glm_mod_3)
 summary(psqis_glm_mod_4)
-# Testing ANOVA for differences between the models
-# p- value > 0.05, no significant difference, smaller model is better
+# Testing ANOVA for differences between the models.
+# p-value > 0.05, no significant difference, smaller model is better.
 anova(psqis_glm_mod_4, psqis_glm_mod_3, test = "Chisq")
-# Smaller model has lower AIC
-# Will continue to proceed with next variable removal
+# Smaller model has lower AIC.
+# Will continue to proceed with next variable removal.
 AIC(psqis_glm_mod_3)
 AIC(psqis_glm_mod_4)
-# Liver.diag is the next variable to be removed
+
+# Liver.diag is the next variable to be removed.
 psqis_glm_mod_5_data <- subset(clean_data2, 
                                select=c(Depression, BMI, Any.fibro,
                                         Gender, PSQIS))
 psqis_glm_mod_5 <- glm(PSQIS ~., data = psqis_glm_mod_5_data,
                        family = "binomial")
 # Comparing summaries between model 4 and model 5.
-# In model 4, Depression has the highest level of significance (p < 0.01)
-# Gender and Any.fibro are at same level of significance (p < 0.05)
-# BMI is still near significance (p < 0.1)
-# In model 5, Depression still has the highest level of significance (p < 0.01)
-# Any.fibro is at same level of significance (p < 0.05)
-# BMI and Gender are near significance (p < 0.1)
-# BMI has highest p-value in model 5, should be removed next
+# In model 4, Depression has the highest level of significance (p < 0.01),
+# Gender and Any.fibro are at same level of significance (p < 0.05) and
+# BMI is still near significance (p < 0.1).
+# In model 5, Depression still has the highest level of significance 
+# (p < 0.01), Any.fibro is at same level of significance (p < 0.05) and
+# BMI and Gender are near significance (p < 0.1).
+# BMI has highest p-value in model 5, should be removed next.
 summary(psqis_glm_mod_4)
 summary(psqis_glm_mod_5)
-# Testing ANOVA for differences between the models
-# p- value > 0.05, no significant difference, smaller model is better
+# Testing ANOVA for differences between the models.
+# p-value > 0.05, no significant difference, smaller model is better.
 anova(psqis_glm_mod_5, psqis_glm_mod_4, test = "Chisq")
-# Smaller model has lower AIC
-# Will continue to proceed with next variable removal
+# Smaller model has lower AIC.
+# Will continue to proceed with next variable removal.
 AIC(psqis_glm_mod_4)
 AIC(psqis_glm_mod_5)
+
 # BMI is the next variable to be removed
 psqis_glm_mod_6_data <- subset(clean_data2, 
                                select=c(Depression, Any.fibro,
@@ -456,32 +465,35 @@ psqis_glm_mod_6_data <- subset(clean_data2,
 psqis_glm_mod_6 <- glm(PSQIS ~., data = psqis_glm_mod_6_data,
                        family = "binomial")
 # Comparing summaries between model 5 and model 6.
-# In model 5, Depression still has the highest level of significance (p < 0.01)
-# Any.fibro is at same level of significance (p < 0.05)
-# BMI and Gender are near significance (p < 0.1)
-# In model 6, Depression still has the highest level of significance (p < 0.01)
-# Any.fibro is at same level of significance (p < 0.05)
-# Gender is near significance (p < 0.1)
+# In model 5, Depression still has the highest level of significance 
+# (p < 0.01), Any.fibro is at same level of significance (p < 0.05) and
+# BMI and Gender are near significance (p < 0.1).
+# In model 6, Depression still has the highest level of significance 
+# (p < 0.01), Any.fibro is at same level of significance (p < 0.05) and
+# Gender is near significance (p < 0.1).
 # Gender has highest p-value in model 6, should be removed next
 summary(psqis_glm_mod_5)
 summary(psqis_glm_mod_6)
-# Testing ANOVA for differences between the models
-# p-value is very close to 0.05, less than 0.1 so near significance
-# Need to evaluate based on AIC value
+# Testing ANOVA for differences between the models.
+# p-value is very close to 0.05, less than 0.1 so near significance.
+# Need to evaluate based on AIC value.
 anova(psqis_glm_mod_6, psqis_glm_mod_5, test = "Chisq")
-# Smaller model has higher AIC, model 5 should be revisited
+# Smaller model has higher AIC, model 5 should be revisited.
 AIC(psqis_glm_mod_5)
 AIC(psqis_glm_mod_6)
-# Using step-wise and comparing it with manual model for PSQIS
+# Using step-wise and comparing it with manual model for PSQIS.
 psqis_glm_step_back <- stepAIC(psqis_glm_mod_full, trace = F)
 summary(psqis_glm_step_back)
 anova(psqis_glm_mod_5, psqis_glm_step_back, test = "Chisq")
-# AIC values are similar between model 5 and step-wise model
-# AIC for step-wise model is slightly lower, but not by much
-# Choose model 5 to avoid overfitting the model
+#' AIC for step-wise model is slightly lower, but only slightly. ANOVA 
+#' provides evidence (p > 0.05) for simpler (manual) model. Proceed with
+#' simpler model.
+# Both models are within predictor rule of 8 degrees of freedom.
 AIC(psqis_glm_mod_5)
 AIC(psqis_glm_step_back)
 
+# Call the model.
+psqis_glm_mod_5
 # Get beta coefficients and p-values of the PSQIS model.
 summary(psqis_glm_mod_5)
 # Get the odds ratios of the PSQIS model.
@@ -798,189 +810,191 @@ round(exp(bss_glm_step_back$coefficients),2)
 # Get the confidence intervals of the odds ratios of the BSS model.
 round(exp(confint(bss_glm_step_back)),2)
 
-####Two Sample T-Test For the Mean for QOL####
+#### Two Sample T-Test For the Mean for QOL ####
 
-#two samples - individuals with and without sleep disturbance
+# Consider two samples - individuals with and without sleep disturbance.
 
 # H0: μ1 = μ2 
-# Where μ1 is the mean QOL of not sleep disturbed individuals and μ2 is the mean QOL of sleep disturbed individuals
+# Where μ1 is the mean QOL of not sleep disturbed individuals and μ2 is 
+# the mean QOL of sleep disturbed individuals.
 # H1: μ1 ≠ μ2
 
-# Make a dataset for sleep disturbance predictor ESS and quality of life response variable SF36.PCS
+# Make a data set for sleep disturbance predictor ESS and quality of life 
+# response variable SF36.PCS.
 ess_pcs <- subset(clean_data2,
                   select = c(ESS, SF36.PCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 ess_pcs_0 <- ess_pcs %>%
   filter(ESS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 ess_pcs_1 <- ess_pcs %>%
   filter(ESS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.PCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.PCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(ess_pcs_0$SF36.PCS, ess_pcs_1$SF36.PCS)
 
-
-# Make a dataset for sleep disturbance predictor ESS and quality of life response variable SF36.MCS
+# Make a data set for sleep disturbance predictor ESS and quality of life 
+# response variable SF36.MCS.
 ess_mcs <- subset(clean_data2,
                   select = c(ESS, SF36.MCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 ess_mcs_0 <- ess_mcs %>%
   filter(ESS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 ess_mcs_1 <- ess_mcs %>%
   filter(ESS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.MCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.MCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(ess_mcs_0$SF36.MCS, ess_mcs_1$SF36.MCS)
 
-# Make a dataset for sleep disturbance predictor PSQIS and quality of life response variable SF36.PCS
+# Make a data set for sleep disturbance predictor PSQIS and quality of 
+# life response variable SF36.PCS.
 psqis_pcs <- subset(clean_data2,
                     select = c(PSQIS, SF36.PCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 psqis_pcs_0 <- psqis_pcs %>%
   filter(PSQIS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 psqis_pcs_1 <- psqis_pcs %>%
   filter(PSQIS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.PCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.PCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(psqis_pcs_0$SF36.PCS, psqis_pcs_1$SF36.PCS)
 
-
-# Make a dataset for sleep disturbance predictor PSQIS and quality of life response variable SF36.MCS
+# Make a data set for sleep disturbance predictor PSQIS and quality of 
+# life response variable SF36.MCS.
 psqis_mcs <- subset(clean_data2,
                     select = c(PSQIS, SF36.MCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 psqis_mcs_0 <- psqis_mcs %>%
   filter(PSQIS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 psqis_mcs_1 <- psqis_mcs %>%
   filter(PSQIS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.MCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.MCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(psqis_mcs_0$SF36.MCS, psqis_mcs_1$SF36.MCS)
 
-
-# Make a dataset for sleep disturbance predictor PSQIS and quality of life response variable SF36.PCS
+# Make a data set for sleep disturbance predictor PSQIS and quality of 
+# life response variable SF36.PCS.
 psqis_pcs <- subset(clean_data2,
                     select = c(PSQIS, SF36.PCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 psqis_pcs_0 <- psqis_pcs %>%
   filter(PSQIS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 psqis_pcs_1 <- psqis_pcs %>%
   filter(PSQIS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.PCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.PCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(psqis_pcs_0$SF36.PCS, psqis_pcs_1$SF36.PCS)
 
-
-# Make a dataset for sleep disturbance predictor PSQIS and quality of life response variable SF36.MCS
+# Make a data set for sleep disturbance predictor PSQIS and quality of 
+# life response variable SF36.MCS.
 psqis_mcs <- subset(clean_data2,
                     select = c(PSQIS, SF36.MCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 psqis_mcs_0 <- psqis_mcs %>%
   filter(PSQIS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 psqis_mcs_1 <- psqis_mcs %>%
   filter(PSQIS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.MCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.MCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(psqis_mcs_0$SF36.MCS, psqis_mcs_1$SF36.MCS)
 
-# Make a dataset for sleep disturbance predictor AIS and quality of life response variable SF36.PCS
+# Make a data set for sleep disturbance predictor AIS and quality of 
+# life response variable SF36.PCS.
 ais_pcs <- subset(clean_data2,
                   select = c(AIS, SF36.PCS))
-
 # Filter for not sleep disturbance (0)
 ais_pcs_0 <- ais_pcs %>%
   filter(AIS == 0)
-
 # Filter for sleep disturbance (1)
 ais_pcs_1 <- ais_pcs %>%
   filter(AIS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.PCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.PCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(ais_pcs_0$SF36.PCS, ais_pcs_1$SF36.PCS)
 
-# Make a dataset for sleep disturbance predictor AIS and quality of life response variable SF36.MCS
+# Make a data set for sleep disturbance predictor AIS and quality of 
+# life response variable SF36.MCS.
 ais_mcs <- subset(clean_data2,
                   select = c(AIS, SF36.MCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 ais_mcs_0 <- ais_mcs %>%
   filter(AIS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 ais_mcs_1 <- ais_mcs %>%
   filter(AIS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.MCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.MCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(ais_mcs_0$SF36.MCS, ais_mcs_1$SF36.MCS)
 
-# Make a dataset for sleep disturbance predictor BSS and quality of life response variable SF36.PCS
+# Make a data set for sleep disturbance predictor BSS and quality of 
+# life response variable SF36.PCS.
 bss_pcs <- subset(clean_data2,
                   select = c(BSS, SF36.PCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 bss_pcs_0 <- bss_pcs %>%
   filter(BSS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 bss_pcs_1 <- bss_pcs %>%
   filter(BSS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.PCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.PCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(bss_pcs_0$SF36.PCS, bss_pcs_1$SF36.PCS)
 
-
-# Make a dataset for sleep disturbance predictor BSS and quality of life response variable SF36.MCS
+# Make a data set for sleep disturbance predictor BSS and quality of 
+# life response variable SF36.MCS.
 bss_mcs <- subset(clean_data2,
                   select = c(BSS, SF36.MCS))
-
-# Filter for not sleep disturbance (0)
+# Filter for not sleep disturbance (0).
 bss_mcs_0 <- bss_mcs %>%
   filter(BSS == 0)
-
-# Filter for sleep disturbance (1)
+# Filter for sleep disturbance (1).
 bss_mcs_1 <- bss_mcs %>%
   filter(BSS == 1)
-
-# Run a two sample t.test to compare the mean of quality of life (SF36.MCS) from a sleep disturbed and with and without sleep disturbance samples
+# Run a two sample t.test to compare the mean of quality of life 
+# (SF36.MCS) from a sleep disturbed and with and without sleep 
+# disturbance samples.
 t.test(bss_mcs_0$SF36.MCS, bss_mcs_1$SF36.MCS)
 
-# All sleep disturbance scales, have a p value < the significance level (0.05), as evidence suggests the mean of quality of 
-#life for individuals with and without sleep disturbance are not the same.
-# Evidence suggests there is a significant difference between the mean QOL of individuals experience sleep disturbance and those who do not 
-# experience sleep disturbance.
+# All sleep disturbance scales, have a p value < the significance level 
+# (0.05), as evidence suggests the mean of quality of life for 
+# individuals with and without sleep disturbance are not the same.
+# Evidence suggests there is a significant difference between the mean 
+# QOL of individuals that experience sleep disturbance and those who do 
+# not experience sleep disturbance.
+# This helps validate our predictors for the construction of our linear
+# regression models with QOL as responses.
 
-#This will help prepare for the linear regression model.
-
-####Linear Regression Model####
+#### Linear Regression Models for QOLs as Responses ####
 
 # Create a linear regression model for sleep disturbance and QOL
 sleep_mcs <- lm(SF36.MCS ~ ESS + PSQIS + AIS + BSS, data = clean_data2)
 sleep_pcs <- lm(SF36.PCS ~ ESS + PSQIS + AIS + BSS, data = clean_data2)
 summary(sleep_mcs)
 summary(sleep_pcs)
-#' Create a linear regression model for sleep disturbance and QOL 
-#' (WITHOUT PSQIS).
+# Check for collinearity in both models.
+vif(sleep_mcs)
+vif(sleep_pcs)
+# Both models pass the collinearity check.
+#' Create linear regression models for sleep disturbance and QOL as above
+#' without PSQIS to assess inclusion as a predictor in models.
 sleep_mcs_no_psqis <- lm(SF36.MCS ~ ESS + AIS + BSS, data = clean_data2)
 sleep_pcs_no_psqis <- lm(SF36.PCS ~ ESS + AIS + BSS, data = clean_data2)
 summary(sleep_mcs_no_psqis)
-#' PSQIS was significant in full model, both models have signficance for
+#' PSQIS was significant in full model, both models have significance for
 #' same variables.
 summary(sleep_pcs_no_psqis)
 #' PSQIS not significant in full, both models have significance for
@@ -989,16 +1003,16 @@ summary(sleep_pcs_no_psqis)
 # Get the confidence intervals of the beta coefficient of each model.
 confint(sleep_mcs)
 confint(sleep_pcs)
-#' Get the confidence intervals of the beta coefficient of each model.
-#' (WITHOUT PSQIS).
+#' Get the confidence intervals of the beta coefficient of each model
+#' (without PSQIS).
 confint(sleep_mcs_no_psqis)
 confint(sleep_pcs_no_psqis)
 
 # Visualize the residuals of the linear regression models.
 hist(resid(sleep_mcs))
 hist(resid(sleep_pcs))
-#' Visualize the residuals of the linear regression models.
-#' (WITHOUT PSQIS).
+#' Visualize the residuals of the linear regression models (without 
+#' PSQIS).
 hist(resid(sleep_mcs_no_psqis))
 hist(resid(sleep_pcs_no_psqis))
 
@@ -1012,51 +1026,16 @@ anova(sleep_pcs_no_psqis,sleep_pcs)
 AIC(sleep_pcs)
 AIC(sleep_pcs_no_psqis)
 #' Full model has lower AIC BUT anova is significant, meaning smaller model 
-#' is better. Based on this as well as comparing the summaries, we pick
-#' smaller model.
+#' is better. Based on this as well as comparing the summaries, we pick the
+#' smaller model (without PSQIS).
 
-# Plot empirical CDF (quantiles) against the theoretical from a normal distribution
-# SF36.MCS
+# Plot empirical CDF (quantiles) against the theoretical from a normal 
+# distribution for SF36.MCS.
 qqnorm(resid(sleep_mcs))
 qqline(resid(sleep_mcs), col=2)
-
-# SF36.PCS
+# Same as above, but for SF36.PCS.
 qqnorm(resid(sleep_pcs_no_psqis))
 qqline(resid(sleep_pcs_no_psqis), col=2)
 
 #### Notes ####
 # Anything below is notes only.
-# Create backward step-wise model for ESS as sleep disturbance measure.
-clean_data_ess_model_new <- subset(clean_data2, 
-                                   select=c(-Subject, -PSQIS, -BSS, -AIS,
-                                            -SF36.PCS, -SF36.MCS))
-str(clean_data_ess_model_new)
-ess_glm_mod_full_new <- glm(ESS~., data = clean_data_ess_model_new, 
-                            family="binomial")
-ess_glm_step_back_new <- stepAIC(ess_glm_mod_full_new,trace = F)
-summary(ess_glm_step_back_new)
-
-# Create backward step-wise model for PSQIS as sleep disturbance measure.
-clean_data_psqis_model_new <- subset(clean_data2, 
-                                     select=c(-Subject, -ESS, -BSS, -AIS, 
-                                              -SF36.PCS, -SF36.MCS))
-psqis_glm_mod_full_new <- glm(PSQIS~., data = clean_data_psqis_model_new, family="binomial")
-psqis_glm_step_back_new <- stepAIC(psqis_glm_mod_full_new,trace = F)
-summary(psqis_glm_step_back_new)
-
-# Create backward step-wise model for BSS as sleep disturbance measure.
-clean_data_bss_model_new <- subset(clean_data2, select=c(-Subject, -ESS, -PSQIS, 
-                                                         -AIS, -SF36.PCS, -SF36.MCS))
-bss_glm_mod_full_new <- glm(BSS~., data = clean_data_bss_model_new, 
-                            family="binomial")
-bss_glm_step_back_new <- stepAIC(bss_glm_mod_full_new,trace = F)
-summary(bss_glm_step_back_new)
-
-# Create backward step-wise model for AIS as sleep disturbance measure.
-clean_data_ais_model_new <- subset(clean_data2, 
-                                   select=c(-Subject, -ESS, -PSQIS, -BSS,
-                                            -SF36.PCS, -SF36.MCS))
-ais_glm_mod_full_new <- glm(AIS~., data = clean_data_ais_model_new, 
-                            family="binomial")
-ais_glm_step_back_new <- stepAIC(ais_glm_mod_full_new,trace = F)
-summary(ais_glm_step_back_new)
