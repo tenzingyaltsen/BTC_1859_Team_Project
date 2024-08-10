@@ -107,7 +107,7 @@ NA_check_data <- NA_check_data %>%
                 as.factor))
 
 # Fit a logistic regression model to see if missingness of PSQI is 
-# related toobserved variables.
+# related to observed variables.
 PSQI_NA_model <- glm(missing_PSQI ~., 
                      data = NA_check_data, family = binomial)
 summary(PSQI_NA_model)
@@ -147,7 +147,6 @@ clean_data2 <- clean_data1 %>%
 
 #### Estimating Prevalence of Sleep Disturbance ####
 
-# Estimate prevalence of sleep disturbance
 # Create a function that estimates prevalence of sleep disturbance for each scale
 
 disturbed_sleep_preval <- function(scale, data) {
@@ -1037,6 +1036,3 @@ qqline(resid(sleep_mcs), col=2)
 # Same as above, but for SF36.PCS.
 qqnorm(resid(sleep_pcs_no_psqis))
 qqline(resid(sleep_pcs_no_psqis), col=2)
-
-#### Notes ####
-# Anything below is notes only.
