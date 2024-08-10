@@ -53,7 +53,14 @@ descriptive <- function(var, data){
     # or continuous
     if (unique_values < 10) {
       cat(paste0("\nFrequency counts for ", i, ":\n"))
-      print(table(var_data))
+      counts <- table(var_data)
+      percentages <- prop.table(table(var_data)) * 100
+      freq_table <- data.frame(Count = counts, Percentage = percentages) %>%
+        rename(Value = Count.var_data,
+               Frequency = Count.Freq,
+               Percentage = Percentage.Freq) %>%
+        dplyr::select(Value, Frequency, Percentage)
+      print(freq_table)
       graph <- ggplot(data, aes_string(x = i)) +
         geom_bar(col = "black", fill = "lightblue") +
         labs(title = paste0("Distribution of ", i), x = i, y = "Count") +
