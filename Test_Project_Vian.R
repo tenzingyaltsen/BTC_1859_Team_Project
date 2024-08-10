@@ -222,8 +222,162 @@ round(exp(psqis_glm_step_back$coefficients),2)
 # Get the confidence interval of the Odds Ratio of the PSQIS model
 round(exp(confint(psqis_glm_step_back)),2)
 
+########################################################
+#                                                      #
+# Create logistic regression model for AIS as response.#
+#                                                      #
+########################################################
 
-# Logistic regression for AIS
+#' Manually create a model to predict AIS without using step-wise function.
+#' Create starting data set with pool of variables to start with, based 
+#' on literature.
+clean_data_ais_model <- subset(clean_data2, 
+                               select=c(Corticoid, Depression, BMI, 
+                                        Liver.diag, RGD, Any.fibro, 
+                                        Renal.fail, Gender, AIS, TFT))
+
+#' There are 151 participants who experience sleep disturbance 
+#' according to AIS and 117 participants who do not. Using p < m/10:
+117/10
+# 11 predictors/degrees of freedom that can be used in the AIS model.
+
+# Create our full model based on above variables selected.
+ais_glm_mod_full <- glm(AIS ~., data = clean_data_ais_model, family="binomial")
+#' Find which variable to remove using highest p-value from summary(). Also
+#' check collinearity.
+summary(ais_glm_mod_full)
+vif(ais_glm_mod_full)
+# All values are less than 5, passes collinearity check.
+
+#' Remove Renal.fail since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value).
+ais_glm_mod_1_data <- subset(clean_data2, 
+                             select=c(Corticoid, Depression, BMI, 
+                                      Liver.diag, RGD, Any.fibro, 
+                                      Gender, AIS, TFT))
+ais_glm_mod_1 <- glm(AIS ~., data = ais_glm_mod_1_data, family="binomial")
+# Compare summaries of the models.
+summary(ais_glm_mod_full)
+summary(ais_glm_mod_1)
+# Same variables are significant. Next to remove would be Gender.
+anova(ais_glm_mod_1,ais_glm_mod_full, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(ais_glm_mod_full)
+AIC(ais_glm_mod_1)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove Gender since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value).
+ais_glm_mod_2_data <- subset(clean_data2, 
+                             select=c(Corticoid, Depression, BMI, Liver.diag,
+                                      RGD, Any.fibro, AIS, TFT))
+ais_glm_mod_2 <- glm(AIS ~., data = ais_glm_mod_2_data, family="binomial")
+summary(ais_glm_mod_1)
+summary(ais_glm_mod_2)
+# Same variables are significant. Next to remove would be BMI.
+anova(ais_glm_mod_2,ais_glm_mod_1, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(ais_glm_mod_1)
+AIC(ais_glm_mod_2)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove BMI since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value).
+ais_glm_mod_3_data <- subset(clean_data2, 
+                             select=c(Corticoid, Depression, Liver.diag,
+                                      RGD, Any.fibro, AIS, TFT))
+ais_glm_mod_3 <- glm(AIS ~., data = ais_glm_mod_3_data, family="binomial")
+summary(ais_glm_mod_2)
+summary(ais_glm_mod_3)
+# Same variables are significant. Next to remove would be RGD.
+anova(ais_glm_mod_3,ais_glm_mod_2, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(ais_glm_mod_2)
+AIC(ais_glm_mod_3)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove RGD since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value). 
+ais_glm_mod_4_data <- subset(clean_data2, 
+                             select=c(Corticoid, Depression, Liver.diag,
+                                      Any.fibro, AIS, TFT))
+ais_glm_mod_4 <- glm(AIS ~., data = ais_glm_mod_4_data, family="binomial")
+summary(ais_glm_mod_3)
+summary(ais_glm_mod_4)
+# Any.fibro is no longer significant. Next to remove would be Corticoid
+anova(ais_glm_mod_4,ais_glm_mod_3, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(ais_glm_mod_3)
+AIC(ais_glm_mod_4)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove Corticoid since it has the highest p-value (do not count Liver.diag
+#' since one of the levels has a lower p-value). 
+ais_glm_mod_5_data <- subset(clean_data2, 
+                             select=c(Depression, Liver.diag,
+                                      Any.fibro, AIS, TFT))
+ais_glm_mod_5 <- glm(AIS ~., data = ais_glm_mod_5_data, family="binomial")
+summary(ais_glm_mod_4)
+summary(ais_glm_mod_5)
+#' Any.fibro is back to being significant and TFT is newly significant. 
+#' Next to remove would be Liver.diag.
+anova(ais_glm_mod_5,ais_glm_mod_4, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(ais_glm_mod_4)
+AIC(ais_glm_mod_5)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove Liver.diag since it has the highest p-value.
+ais_glm_mod_6_data <- subset(clean_data2, 
+                             select=c(Depression,
+                                      Any.fibro, AIS, TFT))
+ais_glm_mod_6 <- glm(AIS ~., data = ais_glm_mod_6_data, family="binomial")
+summary(ais_glm_mod_5)
+summary(ais_glm_mod_6)
+#' TFT no longer significant. 
+#' Next to remove would be TFT.
+anova(ais_glm_mod_6,ais_glm_mod_5, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(ais_glm_mod_5)
+AIC(ais_glm_mod_6)
+# Smaller model has lower AIC, proceed with next variable removal.
+
+#' Remove TFT since it has the highest p-value.
+ais_glm_mod_7_data <- subset(clean_data2, 
+                             select=c(Depression,
+                                      Any.fibro, AIS))
+ais_glm_mod_7 <- glm(AIS ~., data = ais_glm_mod_7_data, family="binomial")
+summary(ais_glm_mod_6)
+summary(ais_glm_mod_7)
+#' Any.fibro no longer significant. 
+#' Next to remove would be Any.fibro.
+anova(ais_glm_mod_7,ais_glm_mod_6, test = "Chisq")
+# ANOVA reveals no difference, smaller model better.
+AIC(ais_glm_mod_6)
+AIC(ais_glm_mod_7)
+# Smaller model has higher AIC. Let's go back to previous model (model 6).
+
+# Using step-wise and comparing it with manual model for AIS.
+ais_glm_step_back <- stepAIC(ais_glm_mod_full,trace = F)
+summary(ais_glm_step_back_new)
+
+anova(ais_glm_mod_6, ais_glm_step_back)
+AIC(ais_glm_step_back_new)
+AIC(ais_glm_mod_6)
+# They're the same model!
+
+# Get beta coefficients and p-values of the AIS model.
+summary(ais_glm_mod_6)
+# Get the odds ratios of the AIS model.
+round(exp(ais_glm_mod_6_data$coefficients),2)
+# Get the confidence intervals of the odds ratios of the AIS model.
+round(exp(confint(ais_glm_mod_6)),2)
+
+#################################################################
+#                                                               #
+# End of logistic regression model creation for AIS as response.#
+#                                                               #
+#################################################################
 
 # Select relevant columns for logistic regression model
 clean_data_ais_model <- subset(clean_data2, 
