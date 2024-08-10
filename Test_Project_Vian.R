@@ -312,33 +312,222 @@ round(exp(confint(ess_glm_mod_7)),2)
 #                                                      #
 ########################################################
 
+##################################################################
+#####                                                        #####
+##### Create logistic regression model for PSQIS as response #####
+#####                                                        #####
+##################################################################
+
+# Manually create a model to predict PSQIS without using step-wise function.
+# Create starting data set with pool of variables to start with based 
+# on literature.
+clean_data_psqis_model <- subset(clean_data2, 
+                                 select=c(Corticoid, Depression, BMI, 
+                                          Liver.diag, RGD, Any.fibro, 
+                                          Renal.fail, Gender, TFT, PSQIS))
+
+# There are 183 participants who experience sleep disturbance according
+# to PSQIS.
+# Whereas, there are 85 participants who do not experience sleep disturbance.
+table(clean_data2$PSQIS)
+# Restricting the number of predictors by following the rule of thumb of m/10.
+85 / 15
+# 5 predictors/degrees of freedom that can be used in the PSQIS model.
+
+# Create our full model based on above variables selected.
+psqis_glm_mod_full <- glm(PSQIS ~., data = clean_data_psqis_model, 
+                          family="binomial")
+# Find which variable to remove using highest p-value.
+# Also check for collinearity.
+summary(psqis_glm_mod_full)
+vif(psqis_glm_mod_full)
+# All values are less than 5, passes collinearity check.
+# Renal.fail has highest p-value, should be removed
+psqis_glm_mod_1_data <- subset(clean_data2, 
+                               select=c(Corticoid, Depression, BMI, 
+                                        Liver.diag, RGD, Any.fibro,
+                                        Gender, TFT, PSQIS))
+psqis_glm_mod_1 <- glm(PSQIS ~., data = psqis_glm_mod_1_data,
+                       family = "binomial")
+# Comparing summaries between full model and model 1.
+# Full model has Gender, Any.fibro, and Depression that are significant.
+# BMI is near significance (p < 0.1)
+# Same variables are significant and near significance in model 1. 
+# RGD has highest p-value in model 1, should be removed next
+summary(psqis_glm_mod_full)
+summary(psqis_glm_mod_1)
+# Testing ANOVA for differences between the models
+# p- value > 0.05, no significant difference, smaller model is better
+anova(psqis_glm_mod_1, psqis_glm_mod_full, test = "Chisq")
+# Smaller model has slightly larger AIC, but AIC values are very similar
+# Will continue to proceed with next variable removal
+AIC(psqis_glm_mod_full)
+AIC(psqis_glm_mod_1)
+# RGD is the next variable to be removed
+psqis_glm_mod_2_data <- subset(clean_data2, 
+                               select=c(Corticoid, Depression, BMI, 
+                                        Liver.diag, Any.fibro,
+                                        Gender, TFT, PSQIS))
+psqis_glm_mod_2 <- glm(PSQIS ~., data = psqis_glm_mod_2_data,
+                       family = "binomial")
+# Comparing summaries between model 1 and model 2.
+# Model 1 has Gender, Any.fibro, and Depression that are significant.
+# BMI is near significance (p < 0.1)
+# Same variables are significant and near significance in model 2. 
+# Corticoid has highest p-value in model 2, should be removed next
+summary(psqis_glm_mod_1)
+summary(psqis_glm_mod_2)
+# Testing ANOVA for differences between the models
+# p- value > 0.05, no significant difference, smaller model is better
+anova(psqis_glm_mod_2, psqis_glm_mod_1, test = "Chisq")
+# Smaller model has lower AIC
+# Will continue to proceed with next variable removal
+AIC(psqis_glm_mod_1)
+AIC(psqis_glm_mod_2)
+# Corticoid is the next variable to be removed
+psqis_glm_mod_3_data <- subset(clean_data2, 
+                               select=c(Depression, BMI, 
+                                        Liver.diag, Any.fibro,
+                                        Gender, TFT, PSQIS))
+psqis_glm_mod_3 <- glm(PSQIS ~., data = psqis_glm_mod_3_data,
+                       family = "binomial")
+# Comparing summaries between model 2 and model 3.
+# Model 2 has Gender, Any.fibro, and Depression that are significant.
+# BMI is near significance (p < 0.1)
+# In model 3, Any.fibro has the highest level of significance (p < 0.01)
+# Gender and Depression are still at same level of significance (p < 0.05)
+# BMI is still near significance (p < 0.1)
+# TFT has highest p-value in model 3, should be removed next (do not count 
+# Liver.diag since one of the levels has a lower p-value)
+summary(psqis_glm_mod_2)
+summary(psqis_glm_mod_3)
+# Testing ANOVA for differences between the models
+# p- value > 0.05, no significant difference, smaller model is better
+anova(psqis_glm_mod_3, psqis_glm_mod_2, test = "Chisq")
+# Smaller model has lower AIC
+# Will continue to proceed with next variable removal
+AIC(psqis_glm_mod_2)
+AIC(psqis_glm_mod_3)
+# TFT is the next variable to be removed
+psqis_glm_mod_4_data <- subset(clean_data2, 
+                               select=c(Depression, BMI, 
+                                        Liver.diag, Any.fibro,
+                                        Gender, PSQIS))
+psqis_glm_mod_4 <- glm(PSQIS ~., data = psqis_glm_mod_4_data,
+                       family = "binomial")
+# Comparing summaries between model 3 and model 4.
+# In model 3, Any.fibro has the highest level of significance (p < 0.01)
+# Gender and Depression are at same level of significance (p < 0.05)
+# BMI is near significance (p < 0.1)
+# In model 4, Depression has the highest level of significance (p < 0.01)
+# Gender and Any.fibro are at same level of significance (p < 0.05)
+# BMI is still near significance (p < 0.1)
+# When considering all levels of Liver.diag, the variable still has the highest
+# p-value in model 4; should be removed next
+summary(psqis_glm_mod_3)
+summary(psqis_glm_mod_4)
+# Testing ANOVA for differences between the models
+# p- value > 0.05, no significant difference, smaller model is better
+anova(psqis_glm_mod_4, psqis_glm_mod_3, test = "Chisq")
+# Smaller model has lower AIC
+# Will continue to proceed with next variable removal
+AIC(psqis_glm_mod_3)
+AIC(psqis_glm_mod_4)
+# Liver.diag is the next variable to be removed
+psqis_glm_mod_5_data <- subset(clean_data2, 
+                               select=c(Depression, BMI, Any.fibro,
+                                        Gender, PSQIS))
+psqis_glm_mod_5 <- glm(PSQIS ~., data = psqis_glm_mod_5_data,
+                       family = "binomial")
+# Comparing summaries between model 4 and model 5.
+# In model 4, Depression has the highest level of significance (p < 0.01)
+# Gender and Any.fibro are at same level of significance (p < 0.05)
+# BMI is still near significance (p < 0.1)
+# In model 5, Depression still has the highest level of significance (p < 0.01)
+# Any.fibro is at same level of significance (p < 0.05)
+# BMI and Gender are near significance (p < 0.1)
+# BMI has highest p-value in model 5, should be removed next
+summary(psqis_glm_mod_4)
+summary(psqis_glm_mod_5)
+# Testing ANOVA for differences between the models
+# p- value > 0.05, no significant difference, smaller model is better
+anova(psqis_glm_mod_5, psqis_glm_mod_4, test = "Chisq")
+# Smaller model has lower AIC
+# Will continue to proceed with next variable removal
+AIC(psqis_glm_mod_4)
+AIC(psqis_glm_mod_5)
+# BMI is the next variable to be removed
+psqis_glm_mod_6_data <- subset(clean_data2, 
+                               select=c(Depression, Any.fibro,
+                                        Gender, PSQIS))
+psqis_glm_mod_6 <- glm(PSQIS ~., data = psqis_glm_mod_6_data,
+                       family = "binomial")
+# Comparing summaries between model 5 and model 6.
+# In model 5, Depression still has the highest level of significance (p < 0.01)
+# Any.fibro is at same level of significance (p < 0.05)
+# BMI and Gender are near significance (p < 0.1)
+# In model 6, Depression still has the highest level of significance (p < 0.01)
+# Any.fibro is at same level of significance (p < 0.05)
+# Gender is near significance (p < 0.1)
+# Gender has highest p-value in model 6, should be removed next
+summary(psqis_glm_mod_5)
+summary(psqis_glm_mod_6)
+# Testing ANOVA for differences between the models
+# p-value is very close to 0.05, less than 0.1 so near significance
+# Need to evaluate based on AIC value
+anova(psqis_glm_mod_6, psqis_glm_mod_5, test = "Chisq")
+# Smaller model has higher AIC, model 5 should be revisited
+AIC(psqis_glm_mod_5)
+AIC(psqis_glm_mod_6)
+# Using step-wise and comparing it with manual model for PSQIS
+psqis_glm_step_back <- stepAIC(psqis_glm_mod_full, trace = F)
+summary(psqis_glm_step_back)
+anova(psqis_glm_mod_5, psqis_glm_step_back, test = "Chisq")
+# AIC values are similar between model 5 and step-wise model
+# AIC for step-wise model is slightly lower, but not by much
+# Choose model 5 to avoid overfitting the model
+AIC(psqis_glm_mod_5)
+AIC(psqis_glm_step_back)
+
+# Get beta coefficients and p-values of the PSQIS model.
+summary(psqis_glm_mod_5)
+# Get the odds ratios of the PSQIS model.
+round(exp(psqis_glm_mod_5$coefficients),2)
+# Get the confidence intervals of the odds ratios of the PSQIS model.
+round(exp(confint(psqis_glm_mod_5)),2)
+
+##################################################################
+#####                                                        #####
+##### End of logistic regression model for PSQIS as response #####
+#####                                                        #####
+##################################################################
 
 # Logistic regression for PSQIS
 
 # Select relevant columns for logistic regression model
-clean_data_psqis_model <- subset(clean_data2, 
-                                 select=c(Corticoid, Depression, BMI, Liver.diag,
-                                          RGD, Any.fibro, Renal.fail, Gender, PSQIS))
+#clean_data_psqis_model <- subset(clean_data2, 
+                                 #select=c(Corticoid, Depression, BMI, Liver.diag,
+                                          # RGD, Any.fibro, Renal.fail, Gender, PSQIS))
 
 # Based the relevant predictors based on literature, use stepwise variable selection to obtain a model with optimal fit
-psqis_glm_mod_full <- glm(PSQIS ~., data = clean_data_psqis_model, family="binomial")
-psqis_glm_step_back <- stepAIC(psqis_glm_mod_full,trace = F)
-summary(psqis_glm_step_back)
+#psqis_glm_mod_full <- glm(PSQIS ~., data = clean_data_psqis_model, family="binomial")
+# psqis_glm_step_back <- stepAIC(psqis_glm_mod_full,trace = F)
+# summary(psqis_glm_step_back)
 
 # Restricting the number of predictors by following the rule of thumb of m/15
 # m/15 for PSQIS
-table(clean_data2$PSQIS)
+# table(clean_data2$PSQIS)
 # There are 183 participants who experience sleep disturbance according to ESS.
 # Whereas, there are 85 participants who do not experience sleep disturbance.
-85 / 15
+# 85 / 15
 # 5 predictors/degrees of freedom that can be used in the PSQIS model
 
 #NOTE 
 # Get the Odds Ratio of the PSQIS model
-round(exp(psqis_glm_step_back$coefficients),2)
+# round(exp(psqis_glm_step_back$coefficients),2)
 
 # Get the confidence interval of the Odds Ratio of the PSQIS model
-round(exp(confint(psqis_glm_step_back)),2)
+# round(exp(confint(psqis_glm_step_back)),2)
 
 
 ########################################################
