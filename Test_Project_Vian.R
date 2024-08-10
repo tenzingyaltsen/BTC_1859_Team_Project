@@ -1,12 +1,12 @@
 # BTC1859 Team Project:
 #### Exploratory Data Analysis ####
 # Load add-on packages, install them if necessary.
-install.packages("dplyr")
-install.packages("mice")
-install.packages("car")
-install.packages("MASS")
-install.packages("funModeling")
-install.packages("ggplot2")
+# install.packages("dplyr")
+# install.packages("mice")
+# install.packages("car")
+# install.packages("MASS")
+# install.packages("funModeling")
+# install.packages("ggplot2")
 library(dplyr)
 library(mice)
 library(car)
