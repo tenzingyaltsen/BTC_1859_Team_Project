@@ -138,8 +138,8 @@ clean_data1 <- imp_stoch_df %>%
   mutate(PSQIS = ifelse(PSQIS > 4, 1, 0)) %>%
   mutate(AIS = ifelse(AIS > 5, 1, 0)) %>%
   mutate(BSS = ifelse(BSS > 0.5, 1, 0))
-  # Note that for BSS, 4 of the imputed variables are above 0.5 while
-  # 2 of the imputed variables are below 0.5.
+# Note that for BSS, 4 of the imputed variables are above 0.5 while
+# 2 of the imputed variables are below 0.5.
 
 # Change categorical variables to factors.
 clean_data2 <- clean_data1 %>% 
