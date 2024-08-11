@@ -842,6 +842,10 @@ ess_pcs_0 <- ess_pcs %>%
 # Filter for sleep disturbance (1).
 ess_pcs_1 <- ess_pcs %>%
   filter(ESS == 1)
+
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(ess_pcs_0$SF36.PCS, ess_pcs_1$SF36.PCS)
+
 # Run a two sample t.test to compare the mean of quality of life 
 # (SF36.PCS) from a sleep disturbed and with and without sleep 
 # disturbance samples.
@@ -857,6 +861,10 @@ ess_mcs_0 <- ess_mcs %>%
 # Filter for sleep disturbance (1).
 ess_mcs_1 <- ess_mcs %>%
   filter(ESS == 1)
+
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(ess_mcs_0$SF36.MCS, ess_mcs_1$SF36.MCS)
+
 # Run a two sample t.test to compare the mean of quality of life 
 # (SF36.MCS) from a sleep disturbed and with and without sleep 
 # disturbance samples.
@@ -872,10 +880,14 @@ psqis_pcs_0 <- psqis_pcs %>%
 # Filter for sleep disturbance (1).
 psqis_pcs_1 <- psqis_pcs %>%
   filter(PSQIS == 1)
-# Run a two sample t.test to compare the mean of quality of life 
+
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(psqis_pcs_0$SF36.PCS, psqis_pcs_1$SF36.PCS)
+
+# Run a two sample wilcox.test to compare the mean of quality of life 
 # (SF36.PCS) from a sleep disturbed and with and without sleep 
-# disturbance samples.
-t.test(psqis_pcs_0$SF36.PCS, psqis_pcs_1$SF36.PCS)
+# disturbance samples since the variance assumption did not hold.
+wilcox.test(psqis_pcs_0$SF36.PCS, psqis_pcs_1$SF36.PCS)
 
 # Make a data set for sleep disturbance predictor PSQIS and quality of 
 # life response variable SF36.MCS.
@@ -887,40 +899,14 @@ psqis_mcs_0 <- psqis_mcs %>%
 # Filter for sleep disturbance (1).
 psqis_mcs_1 <- psqis_mcs %>%
   filter(PSQIS == 1)
-# Run a two sample t.test to compare the mean of quality of life 
-# (SF36.MCS) from a sleep disturbed and with and without sleep 
-# disturbance samples.
-t.test(psqis_mcs_0$SF36.MCS, psqis_mcs_1$SF36.MCS)
 
-# Make a data set for sleep disturbance predictor PSQIS and quality of 
-# life response variable SF36.PCS.
-psqis_pcs <- subset(clean_data2,
-                    select = c(PSQIS, SF36.PCS))
-# Filter for not sleep disturbance (0).
-psqis_pcs_0 <- psqis_pcs %>%
-  filter(PSQIS == 0)
-# Filter for sleep disturbance (1).
-psqis_pcs_1 <- psqis_pcs %>%
-  filter(PSQIS == 1)
-# Run a two sample t.test to compare the mean of quality of life 
-# (SF36.PCS) from a sleep disturbed and with and without sleep 
-# disturbance samples.
-t.test(psqis_pcs_0$SF36.PCS, psqis_pcs_1$SF36.PCS)
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(psqis_mcs_0$SF36.MCS, psqis_mcs_1$SF36.MCS)
 
-# Make a data set for sleep disturbance predictor PSQIS and quality of 
-# life response variable SF36.MCS.
-psqis_mcs <- subset(clean_data2,
-                    select = c(PSQIS, SF36.MCS))
-# Filter for not sleep disturbance (0).
-psqis_mcs_0 <- psqis_mcs %>%
-  filter(PSQIS == 0)
-# Filter for sleep disturbance (1).
-psqis_mcs_1 <- psqis_mcs %>%
-  filter(PSQIS == 1)
-# Run a two sample t.test to compare the mean of quality of life 
+# Run a two sample wilcox.test to compare the mean of quality of life 
 # (SF36.MCS) from a sleep disturbed and with and without sleep 
-# disturbance samples.
-t.test(psqis_mcs_0$SF36.MCS, psqis_mcs_1$SF36.MCS)
+# disturbance samples since the variance assumption did not hold.
+wilcox.test(psqis_mcs_0$SF36.MCS, psqis_mcs_1$SF36.MCS)
 
 # Make a data set for sleep disturbance predictor AIS and quality of 
 # life response variable SF36.PCS.
@@ -932,6 +918,10 @@ ais_pcs_0 <- ais_pcs %>%
 # Filter for sleep disturbance (1)
 ais_pcs_1 <- ais_pcs %>%
   filter(AIS == 1)
+
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(ais_pcs_0$SF36.PCS, ais_pcs_1$SF36.PCS)
+
 # Run a two sample t.test to compare the mean of quality of life 
 # (SF36.PCS) from a sleep disturbed and with and without sleep 
 # disturbance samples.
@@ -947,10 +937,14 @@ ais_mcs_0 <- ais_mcs %>%
 # Filter for sleep disturbance (1).
 ais_mcs_1 <- ais_mcs %>%
   filter(AIS == 1)
-# Run a two sample t.test to compare the mean of quality of life 
+
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(ais_mcs_0$SF36.MCS, ais_mcs_1$SF36.MCS)
+
+# Run a two sample wilcox.test to compare the mean of quality of life 
 # (SF36.MCS) from a sleep disturbed and with and without sleep 
-# disturbance samples.
-t.test(ais_mcs_0$SF36.MCS, ais_mcs_1$SF36.MCS)
+# disturbance samples since variance assumption did not hold.
+wilcox.test(ais_mcs_0$SF36.MCS, ais_mcs_1$SF36.MCS)
 
 # Make a data set for sleep disturbance predictor BSS and quality of 
 # life response variable SF36.PCS.
@@ -962,6 +956,10 @@ bss_pcs_0 <- bss_pcs %>%
 # Filter for sleep disturbance (1).
 bss_pcs_1 <- bss_pcs %>%
   filter(BSS == 1)
+
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(bss_pcs_0$SF36.PCS, bss_pcs_1$SF36.PCS)
+
 # Run a two sample t.test to compare the mean of quality of life 
 # (SF36.PCS) from a sleep disturbed and with and without sleep 
 # disturbance samples.
@@ -977,6 +975,10 @@ bss_mcs_0 <- bss_mcs %>%
 # Filter for sleep disturbance (1).
 bss_mcs_1 <- bss_mcs %>%
   filter(BSS == 1)
+
+# Run a variance test to ensure the assumption of the two independent groups have equal variances
+var.test(bss_mcs_0$SF36.MCS, bss_mcs_1$SF36.MCS)
+
 # Run a two sample t.test to compare the mean of quality of life 
 # (SF36.MCS) from a sleep disturbed and with and without sleep 
 # disturbance samples.
