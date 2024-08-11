@@ -513,6 +513,7 @@ round(exp(psqis_glm_mod_5$coefficients),2)
 # Get the confidence intervals of the odds ratios of the PSQIS model.
 round(exp(confint(psqis_glm_mod_5)),2)
 
+
 #### Create logistic regression model for AIS as response ####
 
 #' Manually create a model to predict AIS without using step-wise function.
@@ -1020,13 +1021,13 @@ confint(sleep_pcs)
 confint(sleep_mcs_no_psqis)
 confint(sleep_pcs_no_psqis)
 
-# Visualize the residuals of the linear regression models.
-hist(resid(sleep_mcs))
-hist(resid(sleep_pcs))
-#' Visualize the residuals of the linear regression models (without 
+# Visualize the residuals of the SF36.MCS linear regression model.
+hist(resid(sleep_mcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
+     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
+#' Visualize the residuals of the SF36.PCS linear regression model (without 
 #' PSQIS).
-hist(resid(sleep_mcs_no_psqis))
-hist(resid(sleep_pcs_no_psqis))
+hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
+     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
 
 # Compare models with and without PSQIS.
 anova(sleep_mcs_no_psqis,sleep_mcs)
