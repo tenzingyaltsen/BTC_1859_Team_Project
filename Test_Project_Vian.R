@@ -1044,8 +1044,9 @@ hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = past
 
 # Plot empirical CDF (quantiles) against the theoretical from a normal 
 # distribution for SF36.MCS.
-qqnorm(resid(sleep_mcs))
-qqline(resid(sleep_mcs), col=2)
+qqnorm(resid(sleep_mcs), main = paste("Normal Q-Q Plot for SF36.MCS Model"))
+qqline(resid(sleep_mcs))
+?qqline
 # Same as above, but for SF36.PCS.
-qqnorm(resid(sleep_pcs_no_psqis))
+qqnorm(resid(sleep_pcs_no_psqis), main = paste("Normal Q-Q Plot for SF36.PCS Model"))
 qqline(resid(sleep_pcs_no_psqis), col=2)
