@@ -155,7 +155,7 @@ clean_data2 <- clean_data1 %>%
                   "PSQIS", "AIS", "BSS"), as.factor))
 
 # View a summary the factorized variables 
-summary(clean_data2)
+describe(clean_data2)
 
 #### Estimating Prevalence of Sleep Disturbance ####
 
