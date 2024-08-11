@@ -1046,7 +1046,7 @@ hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = past
 # distribution for SF36.MCS.
 qqnorm(resid(sleep_mcs), main = paste("Normal Q-Q Plot for SF36.MCS Model"))
 qqline(resid(sleep_mcs))
-?qqline
+
 # Same as above, but for SF36.PCS.
 qqnorm(resid(sleep_pcs_no_psqis), main = paste("Normal Q-Q Plot for SF36.PCS Model"))
-qqline(resid(sleep_pcs_no_psqis), col=2)
+qqline(resid(sleep_pcs_no_psqis))
