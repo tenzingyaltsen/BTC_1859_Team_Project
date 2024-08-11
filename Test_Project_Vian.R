@@ -1021,14 +1021,6 @@ confint(sleep_pcs)
 confint(sleep_mcs_no_psqis)
 confint(sleep_pcs_no_psqis)
 
-# Visualize the residuals of the SF36.MCS linear regression model.
-hist(resid(sleep_mcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
-     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
-#' Visualize the residuals of the SF36.PCS linear regression model (without 
-#' PSQIS).
-hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
-     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
-
 # Compare models with and without PSQIS.
 anova(sleep_mcs_no_psqis,sleep_mcs)
 AIC(sleep_mcs)
@@ -1041,6 +1033,14 @@ AIC(sleep_pcs_no_psqis)
 #' Full model has lower AIC BUT anova is significant, meaning smaller model 
 #' is better. Based on this as well as comparing the summaries, we pick the
 #' smaller model (without PSQIS).
+
+# Visualize the residuals of the SF36.MCS linear regression model.
+hist(resid(sleep_mcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
+     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
+#' Visualize the residuals of the SF36.PCS linear regression model (without 
+#' PSQIS).
+hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
+     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
 
 # Plot empirical CDF (quantiles) against the theoretical from a normal 
 # distribution for SF36.MCS.
