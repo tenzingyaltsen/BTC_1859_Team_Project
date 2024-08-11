@@ -1034,13 +1034,21 @@ AIC(sleep_pcs_no_psqis)
 #' is better. Based on this as well as comparing the summaries, we pick the
 #' smaller model (without PSQIS).
 
-# Visualize the residuals of the SF36.MCS linear regression model.
-hist(resid(sleep_mcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
-     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
-#' Visualize the residuals of the SF36.PCS linear regression model (without 
-#' PSQIS).
-hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model"),
-     xlab = "Residuals of the SF36.MCS Model", ylab = "Frequnecy")
+# Visualize the residuals of the SF36.MCS linear regression model with and without PSQIS.
+hist(resid(sleep_mcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model 1"),
+     xlab = "Residuals of the SF36.MCS Model 1", ylab = "Frequnecy")
+
+hist(resid(sleep_mcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model 2"),
+     xlab = "Residuals of the SF36.MCS Model 2", ylab = "Frequnecy")
+
+#' Visualize the residuals of the SF36.PCS linear regression model with and without 
+#' PSQIS.
+
+hist(resid(sleep_pcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model 1"),
+     xlab = "Residuals of the SF36.MCS Model 2", ylab = "Frequnecy")
+
+hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model 2"),
+     xlab = "Residuals of the SF36.MCS Model 2", ylab = "Frequnecy")
 
 # Plot empirical CDF (quantiles) against the theoretical from a normal 
 # distribution for SF36.MCS.
