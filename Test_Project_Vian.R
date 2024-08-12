@@ -91,6 +91,20 @@ vars <- names(working_data1)
 descriptive(vars, working_data1)
 describe(working_data1)
 
+# Create a separate dataframe to visualize the raw sleep disturbance data when it is binary.
+working_data_sleep <- working_data1
+# Convert sleep disturbance measurements to binary.
+working_data_sleep1 <- working_data_sleep %>%
+  mutate(ESS = ifelse(ESS > 10, 1, 0)) %>%
+  mutate(PSQIS = ifelse(PSQIS > 4, 1, 0)) %>%
+  mutate(AIS = ifelse(AIS > 5, 1, 0))
+
+# Recreate the graphs for the sleep disturbance variables above when factorized. 
+# Specify the variables needed to conduct summary statistics.
+vars_sleeping <- c("ESS", "PSQIS", "AIS")
+# Conduct descriptive analysis.
+descriptive(vars_sleeping, working_data_sleep1)
+
 #### Data Cleaning/Wrangling ####
 
 # There are NAs found in the dataset. Check if there are any empty strings.
@@ -147,12 +161,6 @@ clean_data1 <- imp_stoch_df %>%
   mutate(BSS = ifelse(BSS > 0.5, 1, 0))
 # Note that for BSS, 4 of the imputed variables are above 0.5 while
 # 2 of the imputed variables are below 0.5.
-
-# Recreate the graphs for the sleep disturbance variables above. 
-# Specify the variables needed to conduct summary statistics.
-vars <- names(working_data1)
-# Conduct descriptive analysis.
-descriptive(vars, working_data1)
 
 # Change categorical variables to factors.
 clean_data2 <- clean_data1 %>% 
@@ -800,6 +808,7 @@ AIC(bss_glm_mod_7)
 bss_glm_mod_8_data <- subset(clean_data2, 
                              select=c(BMI, BSS))
 bss_glm_mod_8 <- glm(BSS ~., data = bss_glm_mod_8_data, family="binomial")
+
 summary(bss_glm_mod_7)
 summary(bss_glm_mod_8)
 #' Same variables are significant. No more predictors to remove. 
