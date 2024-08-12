@@ -1061,10 +1061,10 @@ hist(resid(sleep_mcs_no_psqis), col = "lightblue", border = "black", main = past
 #' Visualize the residuals of the SF36.PCS linear regression model with and without 
 #' PSQIS.
 
-hist(resid(sleep_pcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model 1"),
+hist(resid(sleep_pcs), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.PCS Model 1"),
      xlab = "Residuals of the SF36.MCS Model 2", ylab = "Frequnecy")
 
-hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.MCS Model 2"),
+hist(resid(sleep_pcs_no_psqis), col = "lightblue", border = "black", main = paste("Histogram of Residuals of the SF36.PCS Model 2"),
      xlab = "Residuals of the SF36.MCS Model 2", ylab = "Frequnecy")
 
 # Plot empirical CDF (quantiles) against the theoretical from a normal 
