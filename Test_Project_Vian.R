@@ -148,6 +148,12 @@ clean_data1 <- imp_stoch_df %>%
 # Note that for BSS, 4 of the imputed variables are above 0.5 while
 # 2 of the imputed variables are below 0.5.
 
+# Recreate the graphs for the sleep disturbance variables above. 
+# Specify the variables needed to conduct summary statistics.
+vars <- names(working_data1)
+# Conduct descriptive analysis.
+descriptive(vars, working_data1)
+
 # Change categorical variables to factors.
 clean_data2 <- clean_data1 %>% 
   mutate(across(c("Gender", "Liver.diag", "RoD", "RGD", "Any.fibro",
